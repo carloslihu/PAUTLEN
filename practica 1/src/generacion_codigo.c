@@ -1,4 +1,4 @@
-#include "generacion.h"
+#include "../includes/generacion_codigo.h"
 
 
 
