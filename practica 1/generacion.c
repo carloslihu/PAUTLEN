@@ -50,7 +50,7 @@ void declarar_variable(FILE* fpasm, char * nombre,  int tipo,  int tamano)
 
 
 	/* G4 */
-	fprint(fpasm, "\t_%s resd %d\n", nombre,  tamano);
+	fprintf(fpasm, "\t_%s resd %d\n", nombre,  tamano);
 
 
 }
@@ -65,7 +65,7 @@ void escribir_segmento_codigo(FILE* fpasm)
 	*/
 
 	/* G5 */
-	fprintf(fpasm, "segment .text\n\tglobal main\n\textern scan_int, print_int, scan_float, print_float,\n\tscan_boolean, print_boolean\n\textern print_endofline, print_blank, print_string\n\textern alfa_malloc, alfa_free, ld_float\n");
+	fprintf(fpasm, "segment .text\n\tglobal main\n\textern scan_int, print_int, scan_float, print_float, scan_boolean, print_boolean\n\textern print_endofline, print_blank, print_string\n\textern alfa_malloc, alfa_free, ld_float\n");
 
 
 }
@@ -96,7 +96,7 @@ void escribir_fin(FILE* fpasm)
 	*/
 
 
-	fprintf(fpasm, "\tmov dword esp, [__esp]\n\tret\ngestion_error_div_cero:\n\tpush dw msg_error_division\n\tcall print_string\n\tadd esp, 4\n\tcall print_endofline\n\tret\n");
+	fprintf(fpasm, "\tmov dword esp, [__esp]\n\tret\ngestion_error_div_cero:\n\tpush dword msg_error_division\n\tcall print_string\n\tadd esp, 4\n\tcall print_endofline\n\tret\n");
 
 
 	/* G7 */
@@ -242,7 +242,7 @@ void leer(FILE * fpasm, char * nombre, int tipo)
 	FUNCIONES DE ALFALIB (scan_int Y scan_boolean)
 	*/
 
-	fprintf(fpasm, "\tpush dword _nombre\n");
+	fprintf(fpasm, "\tpush dword _%s\n",nombre);
 
 	if (tipo == ENTERO)
 		fprintf(fpasm, "\tcall scan_int\n");
@@ -276,8 +276,7 @@ void escribir(FILE * fpasm, int es_referencia, int tipo)
 	if (es_referencia == 1)
 		fprintf(fpasm, "\tadd esp, 4\n");
 
-
-
+	fprintf(fpasm, "\tcall print_endofline\n");
 	/* G14 */
 
 
@@ -313,7 +312,7 @@ void multiplicar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	if (es_referencia_1)
 		fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2)
-		frprintf(fpasm, "\tmov ebx, dword [ebx]\n");
+		fprintf(fpasm, "\tmov ebx, dword [ebx]\n");
 
 	/*Multiplicacion edx:eax = eax*ebx */
 	fprintf(fpasm, "\timul ebx\n");
@@ -336,7 +335,7 @@ void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	DIVISIÓN ENTRE 0 */
 
 
-	/* G16 */ pensad siempre en mover eax, dword [eax]
+	/* G16 */
 
 	fprintf(fpasm, "\tpop dword ebx\n");
 	fprintf(fpasm, "\tpop dword eax\n");
