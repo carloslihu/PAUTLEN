@@ -27,10 +27,11 @@ $(ODIR)/main_0_generacion.o: $(SDIR)/main_0_generacion.c
 main: $(OBJ) $(ODIR)/main_0_generacion.o
 	$(CC) -o $@ $^ $(CFLAGS)
 
+#para compilar asm y crear ejecutable
+%.asm: $(SDIR)/%.asm
+	nasm -g -o $(ODIR)/%.o -f elf32 $(SDIR)/%.asm
+	gcc -m32 -o % $(ODIR)/%.o $(OBJ)
 
 .PHONY: clean
 clean:
 	-rm -f $(ODIR)/generacion_codigo.o *~ core $(INCDIR)/*~ 
-
-#	nasm -g -o output.o -f elf32 output.asm
-#	gcc -m32 -o output output.o alfalib.o
