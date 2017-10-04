@@ -19,12 +19,12 @@ void escribir_fin(FILE* fpasm);
 void escribir_operando(FILE * fpasm, char * nombre, int es_var);
 void asignar(FILE * fpasm, char * nombre, int es_referencia);
 void sumar(FILE * fpasm, int es_referencia_1, int es_referencia_2);
-void cambiar_signo(FILE * fpasm, int es_referencia);
-void no(FILE * fpasm, int es_referencia, int cuantos_no);
+void cambiar_signo(FILE * fpasm, int es_referencia);//probar
+void no(FILE * fpasm, int es_referencia, int cuantos_no);//probar
 void leer(FILE * fpasm, char * nombre, int tipo);
 void escribir(FILE * fpasm, int es_referencia, int tipo);
-void restar(FILE * fpasm, int es_referencia_1, int es_referencia_2);
-void multiplicar(FILE * fpasm, int es_referencia_1, int es_referencia_2);
-void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2);
-void o(FILE * fpasm, int es_referencia_1, int es_referencia_2);
-void y(FILE * fpasm, int es_referencia_1, int es_referencia_2);
+void restar(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
+void multiplicar(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
+void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
+void o(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
+void y(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar

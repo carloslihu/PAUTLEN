@@ -3,17 +3,17 @@
 
 int main (int argc, char ** argv)
 {
-/*
+	/*codigo */
 	int x;
 	int y;
 	int z;
 	
 	x = 8;
 
-	scanf y;
+	scanf("%d",y);
 	z = x + y;
-	printf z;
-*/
+	printf("%d\n",z);
+
 	FILE * salida;
 
 	if (argc != 2) {fprintf (stdout, "ERROR POCOS ARGUMENTOS\n"); return -1;}
