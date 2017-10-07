@@ -2,7 +2,7 @@ IDIR=includes
 ODIR=obj
 SDIR=src
 CC=gcc
-CFLAGS= -g -Wall 
+CFLAGS= -g -Wall
 #-pthread -rdynamic `pkg-config --cflags gtk+-3.0`
 
 _DEPS =generacion_codigo.h
@@ -26,12 +26,20 @@ $(ODIR)/main_0_generacion.o: $(SDIR)/main_0_generacion.c
 #EJECUTABLES
 main: $(OBJ) $(ODIR)/main_0_generacion.o
 	$(CC) -o $@ $^ $(CFLAGS)
+	./main output.asm
 
 #para compilar asm y crear ejecutable
-%.asm: $(SDIR)/%.asm
-	nasm -g -o $(ODIR)/%.o -f elf32 $(SDIR)/%.asm
-	gcc -m32 -o % $(ODIR)/%.o $(OBJ)
+assemblerMain: output.asm
+	nasm -g -o $(ODIR)/output.o -f elf32 output.asm
+	gcc -m32 -o assemblerMain $(ODIR)/output.o $(ODIR)/alfalib.o
+
+allmight: main
+	./main output.asm
+	$(MAKE) assemblerMain
+
 
 .PHONY: clean
 clean:
 	-rm -f $(ODIR)/generacion_codigo.o *~ core $(INCDIR)/*~ 
+	-rm -f $(ODIR)/output.o $(ODIR)/main_0_generacion.o
+	-rm -f main assemblerMain output.asm

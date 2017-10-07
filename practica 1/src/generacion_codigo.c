@@ -19,7 +19,7 @@ void escribir_subseccion_data(FILE* fpasm)
 		MENSAJES GENERALES (TEXTOS)
 		VARIABLES AUXILIARES NECESARIAS EN EL COMPILADOR QUE DEBAN TENER UN VALOR CONCRETO */
 	/* Variables auxiliares para mensajes de errores en tiempo de ejecución */
-	fprintf(fpasm, "SEGMENT .DATA\n\tMSG_ERROR_DIVISION DB \"ERROR: DIVISON BY ZERO\", 0\n");
+	fprintf(fpasm, "segment .data\n\tmsg_error_division db \"error: divison by zero\", 0\n");
 
 	/* G2 */
 
@@ -30,8 +30,8 @@ void escribir_cabecera_bss(FILE* fpasm)
 	/* FUNCIÓN PARA ESCRIBIR EL INICIO DE LA SECCIÓN .bss:
 		AL MENOS HAY QUE DECLARAR LA VARIABLE AUXILIAR PARA GUARDAR EL PUNTERO DE PILA __esp
 	*/
-	fprintf(fpasm, "SEGMENT .BSS\n");
-	fprintf(fpasm, "\t__ESP RESD 1\n");
+	fprintf(fpasm, "segment .bss\n");
+	fprintf(fpasm, "\t__esp resd 1\n");
 
 
 	/* G3 */
@@ -50,7 +50,7 @@ void declarar_variable(FILE* fpasm, char * nombre,  int tipo,  int tamano)
 
 
 	/* G4 */
-	fprintf(fpasm, "\t_%s RESD %d\n", nombre,  tamano);
+	fprintf(fpasm, "\t_%s resd %d\n", nombre,  tamano);
 
 
 }
@@ -65,7 +65,7 @@ void escribir_segmento_codigo(FILE* fpasm)
 	*/
 
 	/* G5 */
-	fprintf(fpasm, "SEGMENT .TEXT\n\tGLOBAL MAIN\n\tEXTERN SCAN_INT, PRINT_INT, SCAN_FLOAT, PRINT_FLOAT, SCAN_BOOLEAN, PRINT_BOOLEAN\n\tEXTERN PRINT_ENDOFLINE, PRINT_BLANK, PRINT_STRING\n\tEXTERN ALFA_MALLOC, ALFA_FREE, LD_FLOAT\n");
+	fprintf(fpasm, "segment .text\n\tglobal main\n\textern scan_int, print_int, scan_float, print_float, scan_boolean, print_boolean\n\textern print_endofline, print_blank, print_string\n\textern alfa_malloc, alfa_free, ld_float\n");
 
 
 }
@@ -82,7 +82,7 @@ void escribir_inicio_main(FILE* fpasm)
 
 
 	/* G6 */
-	fprintf( fpasm, "\nMAIN:\n\tMOV DWORD [__ESP], ESP\n");
+	fprintf( fpasm, "\nmain:\n\tmov dword [__esp], esp\n");
 }
 
 /**********************************************************************************/
@@ -96,7 +96,7 @@ void escribir_fin(FILE* fpasm)
 	*/
 
 
-	fprintf(fpasm, "\tMOV DWORD ESP, [__ESP]\n\tRET\nGESTION_ERROR_DIV_CERO:\n\tPUSH DWORD MSG_ERROR_DIVISION\n\tCALL PRINT_STRING\n\tADD ESP, 4\n\tCALL PRINT_ENDOFLINE\n\tRET\n");
+	fprintf(fpasm, "\tmov dword esp, [__esp]\n\tret\ngestion_error_div_cero:\n\tpush dword msg_error_division\n\tcall print_string\n\tadd esp, 4\n\tcall print_endofline\n\tret\n");
 
 
 	/* G7 */
@@ -115,10 +115,10 @@ void escribir_operando(FILE * fpasm, char * nombre, int es_var)
 
 	/* G8 */
 	if (es_var == 1) {
-		fprintf(fpasm, "\tPUSH DWORD  _%s \n", nombre);
+		fprintf(fpasm, "\tpush dword  _%s \n", nombre);
 	}
 	else {
-		fprintf(fpasm, "\tPUSH DWORD  %s \n", nombre);
+		fprintf(fpasm, "\tpush dword  %s \n", nombre);
 
 	}
 
@@ -140,10 +140,10 @@ void asignar(FILE * fpasm, char * nombre, int es_referencia)
 
 
 	if (es_referencia == 0)
-		fprintf(fpasm, "\tPOP DWORD EAX\n\tMOV DWORD [_%s], EAX\n", nombre);
+		fprintf(fpasm, "\tpop dword eax\n\tmov dword [_%s], eax\n", nombre);
 
 	else if (es_referencia == 1)
-		/*OPCION A*/fprintf(fpasm, "\tPOP DWORD EAX\n\tMOV EAX, DWORD [EAX]\n\tMOV DWORD [_NOMBRE], EAX\n");
+		/*opcion a*/fprintf(fpasm, "\tpop dword eax\n\tmov eax, dword [eax]\n\tmov dword [_nombre], eax\n");
 	///*OPCION B*/fprintf(fpasm,"pop dword eax\n mov  dword [_nombre], dword [eax]");
 	/*podeis votar  */
 //ninguna es valida->
@@ -167,12 +167,12 @@ void sumar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	   push dword eax
 	*/
 	/* G10 */
-	fprintf(fpasm, "\tPOP DWORD EDX\n");
-	fprintf(fpasm, "\tPOP DWORD EAX\n");
-	if (es_referencia_1) fprintf(fpasm, "\tMOV EAX, DWORD [EAX]\n");
-	if (es_referencia_2) fprintf(fpasm, "\tMOV EDX, DWORD [EDX]\n");
-	fprintf(fpasm, "\tADD EAX, EDX\n");
-	fprintf(fpasm, "\tPUSH DWORD EAX\n");
+	fprintf(fpasm, "\tpop dword edx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
+	fprintf(fpasm, "\tadd eax, edx\n");
+	fprintf(fpasm, "\tpush dword eax\n");
 
 }
 
@@ -183,11 +183,11 @@ void cambiar_signo(FILE * fpasm, int es_referencia)
 	TENIENDO EN CUENTA QUE PUEDE SER UN VALOR INMEDIATO O UNA REFERENCIA
 	A UN VALOR INMEDIATO (VER ASIGNAR)
 	*/
-	fprintf(fpasm, "\tPOP DWORD EAX\n");
+	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia == 1) {
-		fprintf(fpasm, "\tMOV EAX, [EAX]\n");
+		fprintf(fpasm, "\tmov eax, [eax]\n");
 	}
-	fprintf(fpasm, "\tNEG EAX\n");
+	fprintf(fpasm, "\tneg eax\n");
 
 
 	/* G11 */
@@ -217,17 +217,17 @@ void no(FILE * fpasm, int es_referencia, int cuantos_no)
 	_fin_not:
 	*/
 
-	fprintf(fpasm, "\tPOP EAX\n");
+	fprintf(fpasm, "\tpop eax\n");
 	if (es_referencia == 1) {
-		fprintf(fpasm, "\tCMP [EAX], 0\n");
+		fprintf(fpasm, "\tcmp [eax], 0\n");
 	} else {
-		fprintf(fpasm, "\tCMP EAX, 0\n");
+		fprintf(fpasm, "\tcmp eax, 0\n");
 	}
-	fprintf(fpasm, "\tJE _UNO_%d\n", cuantos_no);
-	fprintf(fpasm, "\tPUSH DWORD 0\n");
-	fprintf(fpasm, "\tJMP _FIN_NEGAR_%d\n", cuantos_no);
-	fprintf(fpasm, "_UNO_%d:   PUSH DWORD 1\n", cuantos_no);
-	fprintf(fpasm, "_FIN_NEGAR_%d:\n", cuantos_no);
+	fprintf(fpasm, "\tje _uno_%d\n", cuantos_no);
+	fprintf(fpasm, "\tpush dword 0\n");
+	fprintf(fpasm, "\tjmp _fin_negar_%d\n", cuantos_no);
+	fprintf(fpasm, "_uno_%d:   push dword 1\n", cuantos_no);
+	fprintf(fpasm, "_fin_negar_%d:\n", cuantos_no);
 
 
 	/* G12 */
@@ -242,14 +242,14 @@ void leer(FILE * fpasm, char * nombre, int tipo)
 	FUNCIONES DE ALFALIB (scan_int Y scan_boolean)
 	*/
 
-	fprintf(fpasm, "\tPUSH DWORD _%s\n", nombre);
+	fprintf(fpasm, "\tpush dword _%s\n", nombre);
 
 	if (tipo == ENTERO)
-		fprintf(fpasm, "\tCALL SCAN_INT\n");
+		fprintf(fpasm, "\tcall scan_int\n");
 	else
-		fprintf(fpasm, "\tCALL SCAN_BOOLEAN\n");
+		fprintf(fpasm, "\tcall scan_boolean\n");
 
-	fprintf(fpasm, "\tADD ESP, 4\n");
+	fprintf(fpasm, "\tadd esp, 4\n");
 
 
 	/* G13 */
@@ -267,16 +267,16 @@ void escribir(FILE * fpasm, int es_referencia, int tipo)
 	*/
 
 	if (es_referencia == 1)
-		fprintf(fpasm, "\tPOP EAX\n\tPUSH DWORD [EAX]\n");
+		fprintf(fpasm, "\tpop eax\n\tpush dword [eax]\n");
 	if (tipo != ENTERO)
-		fprintf(fpasm, "\tCALL PRINT_BOOLEAN\n");
+		fprintf(fpasm, "\tcall print_boolean\n");
 	else
-		fprintf(fpasm, "\tCALL PRINT_INT\n");
+		fprintf(fpasm, "\tcall print_int\n");
 
 	if (es_referencia == 1)
-		fprintf(fpasm, "\tADD ESP, 4\n");
+		fprintf(fpasm, "\tadd esp, 4\n");
 
-	fprintf(fpasm, "\tCALL PRINT_ENDOFLINE\n");
+	fprintf(fpasm, "\tcall print_endofline\n");
 	/* G14 */
 
 
@@ -287,12 +287,12 @@ void escribir(FILE * fpasm, int es_referencia, int tipo)
 void restar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 {
 	/* SIMILAR A SUMAR */
-	fprintf(fpasm, "\tPOP DWORD EDX\n");
-	fprintf(fpasm, "\tPOP DWORD EAX\n");
-	if (es_referencia_1) fprintf(fpasm, "\tMOV EAX, DWORD [EAX]\n");
-	if (es_referencia_2) fprintf(fpasm, "\tMOV EDX, DWORD [EDX]\n");
-	fprintf(fpasm, "\tSUB EAX, EDX\n");
-	fprintf(fpasm, "\tPUSH DWORD EAX\n");
+	fprintf(fpasm, "\tpop dword edx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
+	fprintf(fpasm, "\tsub eax, edx\n");
+	fprintf(fpasm, "\tpush dword eax\n");
 }
 
 void multiplicar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
@@ -307,18 +307,18 @@ void multiplicar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	   push dword eax	Basta no usar edx; no hace falta preservarlo
 	*/
 	/*Sacamos los operandos de la pila*/
-	fprintf(fpasm, "\tPOP DWORD EAX\n");
-	fprintf(fpasm, "\tPOP DWORD EBX\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	fprintf(fpasm, "\tpop dword ebx\n");
 	if (es_referencia_1)
-		fprintf(fpasm, "\tMOV EAX, DWORD [EAX]\n");
+		fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2)
-		fprintf(fpasm, "\tMOV EBX, DWORD [EBX]\n");
+		fprintf(fpasm, "\tmov ebx, dword [ebx]\n");
 
-	/*Multiplicacion edx:eax = eax*ebx */
-	fprintf(fpasm, "\tIMUL EBX\n");
+	/*multiplicacion edx:eax = eax*ebx */
+	fprintf(fpasm, "\timul ebx\n");
 
-	/*Metemos el resultado en la pila*/
-	fprintf(fpasm, "\tPUSH DWORD EAX\n");
+	/*metemos el resultado en la pila*/
+	fprintf(fpasm, "\tpush dword eax\n");
 
 
 	/* G15 */
@@ -337,27 +337,27 @@ void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 
 	/* G16 */
 
-	fprintf(fpasm, "\tPOP DWORD EBX\n");
-	fprintf(fpasm, "\tPOP DWORD EAX\n");
+	fprintf(fpasm, "\tpop dword ebx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
 
 	if (es_referencia_1)
-		fprintf(fpasm, "\tMOV EAX, [EAX]\n");
+		fprintf(fpasm, "\tmov eax, [eax]\n");
 
-	/* B.4.19 CBW , CWD , CDQ , CWDE : Sign Extensions */
-	fprintf(fpasm, "\tCDQ\n");
+	/* b.4.19 cbw , cwd , cdq , cwde : sign extensions */
+	fprintf(fpasm, "\tcdq\n");
 
-	/* B.4.117 IDIV : Signed Integer Divide */
+	/* b.4.117 idiv : signed integer divide */
 
-	/* Aqui habria que comprobar que ebx o [ebx] no es 0 y saltar
+	/* aqui habria que comprobar que ebx o [ebx] no es 0 y saltar
 	   donde corresponda si lo es */
 
 	if (es_referencia_2)
-		fprintf(fpasm, "\tIDIV [EBX]\n");
+		fprintf(fpasm, "\tidiv [ebx]\n");
 	else
-		fprintf(fpasm, "\tIDIV EBX\n");
+		fprintf(fpasm, "\tidiv ebx\n");
 
-	/* Apilamos unicamente el cociente */
-	fprintf(fpasm, "\tPUSH DWORD EAX\n");
+	/* apilamos unicamente el cociente */
+	fprintf(fpasm, "\tpush dword eax\n");
 
 
 
@@ -367,12 +367,12 @@ void o(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 {
 	/* SIMILAR A SUMAR */
 
-	fprintf(fpasm, "\tPOP DWORD EDX\n");
-	fprintf(fpasm, "\tPOP DWORD EAX\n");
-	if (es_referencia_1) fprintf(fpasm, "\tMOV EAX, DWORD [EAX]\n");
-	if (es_referencia_2) fprintf(fpasm, "\tMOV EDX, DWORD [EDX]\n");
-	fprintf(fpasm, "\tOR EAX, EDX\n");
-	fprintf(fpasm, "\tPUSH DWORD EAX\n");
+	fprintf(fpasm, "\tpop dword edx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
+	fprintf(fpasm, "\tor eax, edx\n");
+	fprintf(fpasm, "\tpush dword eax\n");
 
 
 }
@@ -381,12 +381,12 @@ void o(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 void y(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 {
 	/* SIMILAR A SUMAR */
-	fprintf(fpasm, "\tPOP DWORD EDX\n");
-	fprintf(fpasm, "\tPOP DWORD EAX\n");
-	if (es_referencia_1) fprintf(fpasm, "\tMOV EAX, DWORD [EAX]\n");
-	if (es_referencia_2) fprintf(fpasm, "\tMOV EDX, DWORD [EDX]\n");
-	fprintf(fpasm, "\tAND EAX, EDX\n");
-	fprintf(fpasm, "\tPUSH DWORD EAX\n");
+	fprintf(fpasm, "\tpop dword edx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
+	fprintf(fpasm, "\tand eax, edx\n");
+	fprintf(fpasm, "\tpush dword eax\n");
 
 }
 

@@ -7,7 +7,7 @@ void declarar_data_string(FILE* fp, char* nombre, char* str){
 }
 
 void escribir_string(FILE* fp, char* nombre){
-	fprintf(fp,"\tpush dword _%s\n\tcall print_string\n");
+	fprintf(fp,"\tpush dword _%s\n\tcall print_string\n",nombre);
 }
 
 int main (int argc, char ** argv)
@@ -20,16 +20,17 @@ int main (int argc, char ** argv)
 	x = 6;
 
 	printf("probando todos los casos de suma\n");
-	scanf("%d",y);
+	/*scanf("%d",&y);*/
+	y=2;
 	z = 1 + x + x + y;
 	printf("%d\n",z);
-	z = x + 1
+	z = x + 1;
 	printf("%d\n",z);
 
 	printf("\nprobando todos los casos de resta\n");
-	z = 1 - x - x - y
+	z = 1 - x - x - y;
 	printf("%d\n",z);
-	z = x - 1
+	z = x - 1;
 	printf("%d\n",z);
 
 	printf("\nprobando todos los casos de cambiar signo\n");
@@ -58,25 +59,25 @@ int main (int argc, char ** argv)
 	printf("%d\n",z);
 
 	printf("\nprobando todos los casos de or\n");
-	z = 1 || 0
+	z = 1 || 0;
 	printf("%d\n",z);
 	z = z || 0;
 	printf("%d\n",z);
 	x = 0;
 	z = 0 || x;
 	printf("%d\n",z);
-	z = z || x
+	z = z || x;
 	printf("%d\n",z);
 
 	printf("\nprobando todos los casos de and\n");
-	z = 1 && 0
+	z = 1 && 0;
 	printf("%d\n",z);
 	z = z && 0;
 	printf("%d\n",z);
 	x = 0;
 	z = 0 && x;
 	printf("%d\n",z);
-	z = z && x
+	z = z && x;
 	printf("%d\n",z);
 
 	FILE * salida;
@@ -89,14 +90,14 @@ int main (int argc, char ** argv)
 
 	escribir_cabecera_compatibilidad(salida);
 	escribir_subseccion_data(salida);
-	declarar_data_string(salida,"suma","probando todos los casos de suma\n");
-	declarar_data_string(salida,"resta","probando todos los casos de suma\n");
-	declarar_data_string(salida,"cambiarSigno","probando todos los casos de cambiar signo\n");
-	declarar_data_string(salida,"no","probando todos los casos de no\n");
-	declarar_data_string(salida,"multiplicar","probando todos los casos de multiplicar\n");
-	declarar_data_string(salida,"dividir","probando todos los casos de dividir\n");
-	declarar_data_string(salida,"or","probando todos los casos de or\n");
-	declarar_data_string(salida,"and","probando todos los casos de and\n");
+	declarar_data_string(salida,"suma","probando todos los casos de suma");
+	declarar_data_string(salida,"resta","probando todos los casos de suma");
+	declarar_data_string(salida,"cambiarSigno","probando todos los casos de cambiar signo");
+	declarar_data_string(salida,"no","probando todos los casos de no");
+	declarar_data_string(salida,"multiplicar","probando todos los casos de multiplicar");
+	declarar_data_string(salida,"dividir","probando todos los casos de dividir");
+	declarar_data_string(salida,"or","probando todos los casos de or");
+	declarar_data_string(salida,"and","probando todos los casos de and");
 	escribir_cabecera_bss(salida);
 
 
@@ -157,11 +158,11 @@ int main (int argc, char ** argv)
 	/* printf z; */
 	//cambio de signo
 	escribir_string(salida, "cambiarSigno");
-	escribir_operando(salida,1,ENTERO);
-	cambiar_signo(0);
+	escribir_operando(salida,"1",0);
+	cambiar_signo(salida,0);
 	escribir(salida,0,ENTERO);
 	escribir_operando(salida, "z",1);
-	cambiar_signo(1);
+	cambiar_signo(salida,1);
 	escribir(salida,0,ENTERO);
 	//no
 	
