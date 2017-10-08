@@ -188,6 +188,7 @@ void cambiar_signo(FILE * fpasm, int es_referencia)
 		fprintf(fpasm, "\tmov eax, [eax]\n");
 	}
 	fprintf(fpasm, "\tneg eax\n");
+	fprintf(fpasm, "\tpush dword eax\n");
 
 
 	/* G11 */
@@ -219,7 +220,7 @@ void no(FILE * fpasm, int es_referencia, int cuantos_no)
 
 	fprintf(fpasm, "\tpop eax\n");
 	if (es_referencia == 1) {
-		fprintf(fpasm, "\tcmp [eax], 0\n");
+		fprintf(fpasm, "\tcmp dword [eax], 0\n");
 	} else {
 		fprintf(fpasm, "\tcmp eax, 0\n");
 	}
@@ -273,7 +274,7 @@ void escribir(FILE * fpasm, int es_referencia, int tipo)
 	else
 		fprintf(fpasm, "\tcall print_int\n");
 
-	if (es_referencia == 1)
+	//if (es_referencia == 1)
 		fprintf(fpasm, "\tadd esp, 4\n");
 
 	fprintf(fpasm, "\tcall print_endofline\n");
@@ -291,8 +292,8 @@ void restar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
-	fprintf(fpasm, "\tsub eax, edx\n");
-	fprintf(fpasm, "\tpush dword eax\n");
+	fprintf(fpasm, "\tsub edx, eax\n");
+	fprintf(fpasm, "\tpush dword edx\n");
 }
 
 void multiplicar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
@@ -307,8 +308,8 @@ void multiplicar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	   push dword eax	Basta no usar edx; no hace falta preservarlo
 	*/
 	/*Sacamos los operandos de la pila*/
-	fprintf(fpasm, "\tpop dword eax\n");
 	fprintf(fpasm, "\tpop dword ebx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia_1)
 		fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2)
@@ -337,10 +338,10 @@ void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 
 	/* G16 */
 
-	fprintf(fpasm, "\tpop dword ebx\n");
 	fprintf(fpasm, "\tpop dword eax\n");
+	fprintf(fpasm, "\tpop dword ebx\n");
 
-	if (es_referencia_1)
+	if (es_referencia_2)
 		fprintf(fpasm, "\tmov eax, [eax]\n");
 
 	/* b.4.19 cbw , cwd , cdq , cwde : sign extensions */
@@ -351,10 +352,16 @@ void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	/* aqui habria que comprobar que ebx o [ebx] no es 0 y saltar
 	   donde corresponda si lo es */
 
-	if (es_referencia_2)
-		fprintf(fpasm, "\tidiv [ebx]\n");
-	else
+	if (es_referencia_1){
+		fprintf(fpasm,"\tcmp dword [ebx], 0\n");
+		fprintf(fpasm,"\tje gestion_error_div_cero\n");
+		fprintf(fpasm, "\tidiv dword [ebx]\n");
+	}
+	else{
+		fprintf(fpasm,"\tcmp ebx, 0\n");
+		fprintf(fpasm,"\tje gestion_error_div_cero\n");
 		fprintf(fpasm, "\tidiv ebx\n");
+	}
 
 	/* apilamos unicamente el cociente */
 	fprintf(fpasm, "\tpush dword eax\n");
