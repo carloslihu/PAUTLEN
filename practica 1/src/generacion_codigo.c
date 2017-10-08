@@ -143,7 +143,7 @@ void asignar(FILE * fpasm, char * nombre, int es_referencia)
 		fprintf(fpasm, "\tpop dword eax\n\tmov dword [_%s], eax\n", nombre);
 
 	else if (es_referencia == 1)
-		/*opcion a*/fprintf(fpasm, "\tpop dword eax\n\tmov eax, dword [eax]\n\tmov dword [_nombre], eax\n");
+		/*opcion a*/fprintf(fpasm, "\tpop dword eax\n\tmov eax, dword [eax]\n\tmov dword [_%s], eax\n",nombre);
 	///*OPCION B*/fprintf(fpasm,"pop dword eax\n mov  dword [_nombre], dword [eax]");
 	/*podeis votar  */
 //ninguna es valida->

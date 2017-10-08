@@ -12,75 +12,6 @@ void escribir_string(FILE* fp, char* nombre){
 
 int main (int argc, char ** argv)
 {
-	/*codigo que deberia resultar*/
-	/*
-	int x;
-	int y;
-	int z;
-	
-	x = 6;
-
-	printf("probando todos los casos de suma\n");
-	scanf("%d",&y);
-	y=2;
-	z = 1 + x + x + y;
-	printf("%d\n",z);
-	z = x + 1;
-	printf("%d\n",z);
-
-	printf("\nprobando todos los casos de resta\n");
-	z = y - x - x - 1;
-	printf("%d\n",z);
-	z = x - 1;
-	printf("%d\n",z);
-
-	printf("\nprobando todos los casos de cambiar signo\n");
-	printf("%d\n",-1);
-	z = -z;
-	printf("%d\n",z);
-
-	printf("\nprobando todos los casos de no\n");
-	printf("%d\n",!1);
-	z = 0;
-	printf("%d\n",!z);
-
-	printf("\nprobando todos los casos de multiplicar\n");
-	z = 2*x*x*y;
-	printf("%d\n",z);
-	z = x*2;
-	printf("%d\n",z);
-
-	printf("\nprobando todos los casos de dividir\n");
-	x=6;
-	y=3;
-	z = x/y/2;
-	printf("%d\n",z);
-	z = x/3;
-	printf("%d\n",z);
-	z = 12/x;
-	printf("%d\n",z);
-
-	printf("\nprobando todos los casos de or\n");
-	z = 1 || 0;
-	printf("%d\n",z);
-	z = z || 0;
-	printf("%d\n",z);
-	x = 0;
-	z = 0 || x;
-	printf("%d\n",z);
-	z = z || x;
-	printf("%d\n",z);
-
-	printf("\nprobando todos los casos de and\n");
-	z = 1 && 0;
-	printf("%d\n",z);
-	z = z && 0;
-	printf("%d\n",z);
-	x = 0;
-	z = 0 && x;
-	printf("%d\n",z);
-	z = z && x;
-	printf("%d\n",z);*/
 
 	FILE * salida;
 
@@ -112,175 +43,270 @@ int main (int argc, char ** argv)
 	escribir_segmento_codigo(salida);
 	escribir_inicio_main(salida);
 
-	/* x=8; */
-
+	/* x=6; */
 	escribir_operando(salida,"6",0);
 	asignar(salida,"x",0);
 
 	/* scanf y; */
-	//escribir(salida,1,ENTERO);
 	leer(salida,"y",ENTERO);
+	//printf("%d\n%d", y, x);
 	escribir_operando(salida,"y",1);
 	escribir(salida,1,ENTERO);
 	escribir_operando(salida,"x",1);
 	escribir(salida,1,ENTERO);
 
-	/* z = x + y */
+
+
+	//EMPEZAMOS A PROBAR LAS OPERACIONES ARITMETICAS
+
+	/*NOTA: todos los "//printf("1000001\n");" que hay mas abajo son para tener unas "etiquetas" por las que guiarse al ver tanto el output
+	como el codigo asm generado. Su proposito es unicamente de debug. Nada más*/
+
+	//--------------------------------------------------------
 	//suma
-	//escribir_string(salida,"suma");
+	//printf("1000001\n");
 	escribir_operando(salida,"1000001",0);
 	escribir(salida,0,ENTERO);
+	//z = y+x+x+1;
 	escribir_operando(salida,"1",0);
 	escribir_operando(salida,"x",1);
 	escribir_operando(salida,"x",1);
 	escribir_operando(salida,"y",1);
+	//		[_y] + [_x]
 	sumar(salida,1,1);
+	//		noref + [_x]
 	sumar(salida,1,0);
+	//		noref+noref
 	sumar(salida,0,0);
 	asignar(salida,"z",0);
+	//printf("%d\n",z);
 	escribir_operando(salida, "z", 1);
 	escribir(salida,1,ENTERO);
+	//z = x+1;
 	escribir_operando(salida,"1",0);
 	escribir_operando(salida,"x",1);
+	//		[_x] + noref
 	sumar(salida,0,1);
 	asignar(salida,"z",0);
+	//printf("%d\n",z);
 	escribir_operando(salida, "z", 1);
 	escribir(salida,1,ENTERO);
-	/* printf z; */
+	//--------------------------------------------------------
+
+	
+	//--------------------------------------------------------
 	//resta
-	//escribir_string(salida,"resta");
+	//printf("1000001\n");
 	escribir_operando(salida,"1000001",0);
 	escribir(salida,0,ENTERO);
+	//z = y - x - x - 1;
 	escribir_operando(salida,"1",0);
 	escribir_operando(salida,"x",1);
 	escribir_operando(salida,"x",1);
 	escribir_operando(salida,"y",1);
+	//		[_y] - [_x]
 	restar(salida,1,1);
+	//		noref - [_x]
 	restar(salida,1,0);
+	//		noref - noref
 	restar(salida,0,0);
 	asignar(salida,"z",0);
+	//printf("%d\n",z);
 	escribir_operando(salida, "z", 1);
 	escribir(salida,1,ENTERO);
+	//z = x-1;
 	escribir_operando(salida,"1",0);
 	escribir_operando(salida,"x",1);
+	//		[_x] - 1
 	restar(salida,0,1);
 	asignar(salida,"z",0);
+	//printf("%d\n",z);
 	escribir_operando(salida, "z", 1);
 	escribir(salida,1,ENTERO);
-	/* printf z; */
+	//--------------------------------------------------------
+
+
+	//--------------------------------------------------------
 	//cambio de signo
-	//escribir_string(salida, "cambiarSigno");
+	//printf("1000001\n");
 	escribir_operando(salida,"1000001",0);
 	escribir(salida,0,ENTERO);
+	////printf("%d\n",-1);
 	escribir_operando(salida,"1",0);
 	cambiar_signo(salida,0);
 	escribir(salida,0,ENTERO);
+	////printf("%d\n",-z);
 	escribir_operando(salida, "z",1);
 	cambiar_signo(salida,1);
 	escribir(salida,0,ENTERO);
+	//--------------------------------------------------------
+
+
+	//--------------------------------------------------------
 	//no
-	//escribir_string(salida, "no");
+	//printf("1000001\n");
 	escribir_operando(salida,"1000001",0);
 	escribir(salida,0,ENTERO);
+	//printf("%d\n",!1);
 	escribir_operando(salida,"1",0);
 	no(salida,0,0);
 	escribir(salida,0,ENTERO);
+	//z=0;
 	escribir_operando(salida,"0",0);
 	asignar(salida,"z",0);
+	//printf("%d\n",z);
 	escribir_operando(salida, "z",1);
 	no(salida,1,1);
 	escribir(salida,0,ENTERO);
+	//--------------------------------------------------------
+
+
+	//--------------------------------------------------------
 	//multiplicar
+	//printf("1000001\n");
 	escribir_operando(salida,"1000001",0);
 	escribir(salida,0,ENTERO);
+	//z = y*x*x*2
 	escribir_operando(salida,"2",0);
 	escribir_operando(salida,"x",1);
 	escribir_operando(salida,"x",1);
 	escribir_operando(salida,"y",1);
+	//		[_y]*[_x]
 	multiplicar(salida,1,1);
+	//		noref*[_x]
 	multiplicar(salida,1,0);
+	//		noref*noref
 	multiplicar(salida,0,0);
 	asignar(salida,"z",0);
+	//printf("%d\n",z);
 	escribir_operando(salida, "z", 1);
 	escribir(salida,1,ENTERO);
+	//z = x*2;
 	escribir_operando(salida,"2",0);
 	escribir_operando(salida,"x",1);
+	//		[_x]*noref
 	multiplicar(salida,0,1);
 	asignar(salida,"z",0);
+	//printf("%d\n",z);
 	escribir_operando(salida, "z", 1);
 	escribir(salida,1,ENTERO);
+	//--------------------------------------------------------
+
+
+	//--------------------------------------------------------
 	//dividir
+	//printf("1000001\n");
 	escribir_operando(salida,"1000001",0);
 	escribir(salida,0,ENTERO);
+	//y=3;
 	escribir_operando(salida,"3",0);
 	asignar(salida,"y",0);
+	//z=6;
 	escribir_operando(salida,"6",0);
-	asignar(salida,"x",0);
-	//x = 6; y = 3;
+	asignar(salida,"z",0);
+	//x=z;
+	escribir_operando(salida,"z",1);
+	asignar(salida,"x",1);
+	//printf("%d\n",x/y/2);
 	escribir_operando(salida,"2",0);
 	escribir_operando(salida,"y",1);
 	escribir_operando(salida,"x",1);
+	//		[_x]/[_y]
 	dividir(salida,1,1);
-	escribir(salida,0,ENTERO);
-	escribir_operando(salida,"2",0);
+	//		noref/noref
 	dividir(salida,0,0);
 	escribir(salida,0,ENTERO);
+	//printf("%d\n",x/3);
 	escribir_operando(salida,"3",0);
 	escribir_operando(salida,"x",1);
+	//		[_x]/noref
 	dividir(salida,0,1);
 	escribir(salida,0,ENTERO);
+	//printf("%d\n",12/x);
 	escribir_operando(salida,"x",1);
 	escribir_operando(salida,"12",0);
+	//		noref/[_x]
 	dividir(salida,1,0);
 	escribir(salida,0,ENTERO);
+	//--------------------------------------------------------
+
+
+	//--------------------------------------------------------
 	//or
+	//printf("1000001\n");
 	escribir_operando(salida,"1000001",0);
 	escribir(salida,0,ENTERO);
+	//printf("%d\n",1||0);
 	escribir_operando(salida,"1",0);
 	escribir_operando(salida,"0",0);
+	//		noref || noref
 	o(salida,0,0);
 	escribir(salida,0,BOOLEAN);
+	//z=0;
 	escribir_operando(salida,"0",0);
 	asignar(salida,"z",0);
+	//printf("%d\n",1||z);
 	escribir_operando(salida,"z",1);
 	escribir_operando(salida,"1",0);
+	//		noref || [_z]
 	o(salida,1,0);
 	escribir(salida,0,BOOLEAN);
+	//printf("%d\n",z||0);
 	escribir_operando(salida,"0",0);
 	escribir_operando(salida,"z",1);
+	//		[_z] || noref
 	o(salida,0,1);
 	escribir(salida,0,BOOLEAN);
+	//x=0;
 	escribir_operando(salida,"0",0);
 	asignar(salida,"x",0);
+	//printf("%d\n",z||x);
 	escribir_operando(salida,"x",1);
 	escribir_operando(salida,"z",1);
+	//		[_z] || [_x]
 	o(salida,1,1);
 	escribir(salida,0,BOOLEAN);
+	//--------------------------------------------------------
+
+
+	//--------------------------------------------------------
 	//and
+	//printf("1000001\n");
 	escribir_operando(salida,"1000001",0);
 	escribir(salida,0,ENTERO);
+	//printf("%d\n",1&&1);
 	escribir_operando(salida,"1",0);
 	escribir_operando(salida,"1",0);
+	//		noref && noref
 	y(salida,0,0);
 	escribir(salida,0,BOOLEAN);
+	//z=0;
 	escribir_operando(salida,"0",0);
 	asignar(salida,"z",0);
+	//printf("%d\n",1&&z);
 	escribir_operando(salida,"z",1);
 	escribir_operando(salida,"1",0);
+	//		noref && [_z]
 	y(salida,1,0);
 	escribir(salida,0,BOOLEAN);
+	//printf("%d\n",z&&0);
 	escribir_operando(salida,"0",0);
 	escribir_operando(salida,"z",1);
+	//		[_z] && noref
 	y(salida,0,1);
 	escribir(salida,0,BOOLEAN);
+	//x=1;
 	escribir_operando(salida,"1",0);
 	asignar(salida,"x",0);
+	//z=1;
 	escribir_operando(salida,"1",0);
 	asignar(salida,"z",0);
+	//printf("%d\n",z&&x);
 	escribir_operando(salida,"x",1);
 	escribir_operando(salida,"z",1);
 	y(salida,1,1);
 	escribir(salida,0,BOOLEAN);
+	//--------------------------------------------------------
 
 
 	escribir_fin(salida);
