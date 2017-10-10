@@ -143,7 +143,7 @@ void asignar(FILE * fpasm, char * nombre, int es_referencia)
 		fprintf(fpasm, "\tpop dword eax\n\tmov dword [_%s], eax\n", nombre);
 
 	else if (es_referencia == 1)
-		/*opcion a*/fprintf(fpasm, "\tpop dword eax\n\tmov eax, dword [eax]\n\tmov dword [_%s], eax\n",nombre);
+		/*opcion a*/fprintf(fpasm, "\tpop dword eax\n\tmov eax, dword [eax]\n\tmov dword [_%s], eax\n", nombre);
 	///*OPCION B*/fprintf(fpasm,"pop dword eax\n mov  dword [_nombre], dword [eax]");
 	/*podeis votar  */
 //ninguna es valida->
@@ -275,7 +275,7 @@ void escribir(FILE * fpasm, int es_referencia, int tipo)
 		fprintf(fpasm, "\tcall print_int\n");
 
 	//if (es_referencia == 1)
-		fprintf(fpasm, "\tadd esp, 4\n");
+	fprintf(fpasm, "\tadd esp, 4\n");
 
 	fprintf(fpasm, "\tcall print_endofline\n");
 	/* G14 */
@@ -352,14 +352,14 @@ void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	/* aqui habria que comprobar que ebx o [ebx] no es 0 y saltar
 	   donde corresponda si lo es */
 
-	if (es_referencia_1){
-		fprintf(fpasm,"\tcmp dword [ebx], 0\n");
-		fprintf(fpasm,"\tje gestion_error_div_cero\n");
+	if (es_referencia_1) {
+		fprintf(fpasm, "\tcmp dword [ebx], 0\n");
+		fprintf(fpasm, "\tje gestion_error_div_cero\n");
 		fprintf(fpasm, "\tidiv dword [ebx]\n");
 	}
-	else{
-		fprintf(fpasm,"\tcmp ebx, 0\n");
-		fprintf(fpasm,"\tje gestion_error_div_cero\n");
+	else {
+		fprintf(fpasm, "\tcmp ebx, 0\n");
+		fprintf(fpasm, "\tje gestion_error_div_cero\n");
 		fprintf(fpasm, "\tidiv ebx\n");
 	}
 
