@@ -1,0 +1,19 @@
+Autores:
+	Javier Gómez Martínez
+	Carlos Li Hu
+
+Al hacer make, se crean el .o en el directorio "obj".
+Utiliza el .c que se encuentra en "src".
+El .h está en el directorio "includes".
+
+
+Descripcion de los contenidos del .zip:
+/practica1
+	/obj
+		alfalib.o
+	/src
+		generacion_codigo.c
+	/includes
+		generacion_codigo.h
+	Makefile
+	LEEME.txt

@@ -96,7 +96,7 @@ void escribir_fin(FILE* fpasm)
 	*/
 
 
-	fprintf(fpasm, "\tmov dword esp, [__esp]\n\tret\ngestion_error_div_cero:\n\tpush dword msg_error_division\n\tcall print_string\n\tadd esp, 4\n\tcall print_endofline\n\tmov dword esp, [__esp]\n\tret\n");
+	fprintf(fpasm, "\tmov dword esp, [__esp]\n\tret\ngestion_error_div_cero:\n\tpush dword msg_error_division\n\tcall print_string\n\tadd esp, 4\n\tcall print_endofline\n\tret\n");
 
 
 	/* G7 */

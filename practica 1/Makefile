@@ -40,7 +40,7 @@ allmight: main
 
 .PHONY: clean
 zip:
-	zip -r Gomez_Li_​NASM.zip includes obj src Makefile
+	zip -r Gomez_Li_​NASM.zip includes obj src Makefile LEEME.txt
 clean:
 	-rm -f $(ODIR)/generacion_codigo.o *~ core $(INCDIR)/*~ 
 	-rm -f $(ODIR)/output.o $(ODIR)/main_0_generacion.o
