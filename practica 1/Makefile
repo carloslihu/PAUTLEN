@@ -39,6 +39,8 @@ allmight: main
 
 
 .PHONY: clean
+zip:
+	zip -r Gomez_Li_​NASM.zip ../practica\ 1
 clean:
 	-rm -f $(ODIR)/generacion_codigo.o *~ core $(INCDIR)/*~ 
 	-rm -f $(ODIR)/output.o $(ODIR)/main_0_generacion.o
