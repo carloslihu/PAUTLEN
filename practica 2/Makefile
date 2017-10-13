@@ -6,7 +6,7 @@ CFLAGS= -g -Wall
 
 _DEPS =tablaHash.h
 
-_OBJ =tablaHash.o
+_OBJ =tablaHash.o tablaSimbolos.o
 
 
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
