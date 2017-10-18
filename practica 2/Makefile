@@ -4,7 +4,7 @@ SDIR=src
 CC=gcc
 CFLAGS= -g -Wall
 
-_DEPS =tablaHash.h
+_DEPS =tablaHash.h tablaSimbolos.h
 
 _OBJ =tablaHash.o tablaSimbolos.o
 
