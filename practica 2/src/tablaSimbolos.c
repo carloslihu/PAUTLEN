@@ -1,47 +1,77 @@
-#include "../includes/tablaHash.h"
+#include "../includes/tablaSimbolos.h"
+#define TABLESIZE 256
 
-/*
-DeclararGlobal(id, desc_id)
-if ( TablaSimbolosGlobal -> get(id) == null)
-{
-	TablaSimbolosGlobal->set(id, desc_id);
-	return ok;   // 9
+TABLA_HASH * tablaSimbolosGlobal = NULL;
+TABLA_HASH * tablaSimbolosLocal = NULL;
+
+STATUS declararGlobal(const char* lexema,  CATEGORIA categ, TIPO tipo, CLASE clase, int adic1, int adic2) {
+	if (tablaSimbolosGlobal == NULL)
+		tablaSimbolosGlobal = crear_tabla(TABLESIZE);
+	if (tablaSimbolosGlobal)
+		return insertar_simbolo(tablaSimbolosGlobal, lexema, categ, tipo, clase, adic1, adic2);
+	else
+		return ERR;
 }
-else  return error; // 1, 2, 3
 
-DeclararLocal(id, desc_id)
-if ( TablaSimbolosLocal -> get(id) == null)
-{
-	TablaSimbolosLocal->set(id, desc_id);
-	return ok;   // 10 11
+
+STATUS declararLocal(const char* lexema,  CATEGORIA categ, TIPO tipo, CLASE clase, int adic1, int adic2) {
+	if (tablaSimbolosLocal)
+		return insertar_simbolo(tablaSimbolosLocal, lexema, categ, tipo, clase, adic1, adic2);
+	else
+		return ERR;
+}// 4, 5, 6, 7, 8
+
+
+INFO_SIMBOLO *usoGlobal(const char* lexema) {
+	if (tablaSimbolosGlobal)
+		return buscar_simbolo(tablaSimbolosGlobal, lexema);
+	else
+		return NULL;
 }
-else  return error; // 4, 5, 6, 7, 8
 
-UsoGlobal(id)
-dato = TablaSimbolosGlobal -> get(id);
-if ( dato == null)
-{
-	return err;   // 12, 17 (funciones)
+
+INFO_SIMBOLO *usoLocal(const char* lexema) {
+	if (tablaSimbolosLocal && tablaSimbolosGlobal) {
+		INFO_SIMBOLO * aux = buscar_simbolo(tablaSimbolosLocal, lexema);
+		if (aux)
+			return aux;
+		else
+			return buscar_simbolo(tablaSimbolosGlobal, lexema);
+	}
+	else
+		return NULL;
 }
-else  return dato; // 9, 16 (funciones)
 
-UsoLocal(id)
-dato = TablaSimbolosLoca	l -> get(id);
-if ( dato == null)
-{
-	dato = TablaSimbolosGlobal -> get(id);
-	if (dato == null) return err;   // 13
-	else return dato                   // 14
+
+STATUS declararFuncion(const char* lexema,  CATEGORIA categ, TIPO tipo, CLASE clase, int adic1, int adic2) {
+	if (tablaSimbolosGlobal == NULL) {
+		tablaSimbolosGlobal = crear_tabla(TABLESIZE);
+		if (tablaSimbolosGlobal == NULL)
+			return ERR;
+	}
+
+	liberar_tabla(tablaSimbolosLocal);
+	tablaSimbolosLocal = crear_tabla(TABLESIZE);
+
+	if (tablaSimbolosLocal) {
+		if (insertar_simbolo(tablaSimbolosGlobal, lexema, categ, tipo, clase, adic1, adic2) == ERR) {
+			liberar_tabla(tablaSimbolosLocal);
+			tablaSimbolosLocal = NULL;
+			return ERR;
+		}
+		return insertar_simbolo(tablaSimbolosLocal, lexema, categ, tipo, clase, adic1, adic2);
+	} else {
+		return ERR;
+	}
 }
-else  return dato; // 10, 11, 15
 
-DeclararFuncion(id, desc_id)
-if ( TablaSimbolosGlobal-> get(id) != null )
-	return error;  // 3
-else {
-	TablaSimbolosGlobal -> set(id, desc_id);
-	TablaSimbolosLocal->init();
-	TablaSimbolosLocal->set(id, desc_id);
-	return ok;     // 11  }
+void cerrarFuncion(){
+	liberar_tabla(tablaSimbolosLocal);
+	tablaSimbolosLocal = NULL;
+}
 
- */
+void limpiarTablas(){
+	cerrarFuncion();
+	liberar_tabla(tablaSimbolosGlobal);
+	tablaSimbolosGlobal = NULL;
+}

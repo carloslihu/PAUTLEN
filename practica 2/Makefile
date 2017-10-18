@@ -4,7 +4,7 @@ SDIR=src
 CC=gcc
 CFLAGS= -g -Wall
 
-_DEPS =tablaHash.h
+_DEPS =tablaHash.h tablaSimbolos.h
 
 _OBJ =tablaHash.o tablaSimbolos.o
 
@@ -23,10 +23,11 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 
 
 zip:
-	zip -r Gomez_Li_Nombre_tabla.zip src obj includes Makefile README.txt
+	zip -r GomezJavier_LiCarlos_TABLA.zip src txt obj includes Makefile README.txt
 
 .PHONY: clean
 
 clean:
 	-rm -f $(ODIR)/* *~ core $(INCDIR)/*~ 
 	-rm -f prueba_tabla
+	-rm -f txt/*
