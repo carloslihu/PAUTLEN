@@ -30,4 +30,4 @@ zip:
 clean:
 	-rm -f $(ODIR)/* *~ core $(INCDIR)/*~ 
 	-rm -f prueba_tabla
-	-rm -f txt/*
+	-rm -f txt/output.txt
