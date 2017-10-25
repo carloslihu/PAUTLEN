@@ -65,12 +65,12 @@ STATUS declararFuncion(const char* lexema,  CATEGORIA categ, TIPO tipo, CLASE cl
 	}
 }
 
-void cerrarFuncion(){
+void cerrarFuncion() {
 	liberar_tabla(tablaSimbolosLocal);
 	tablaSimbolosLocal = NULL;
 }
 
-void limpiarTablas(){
+void limpiarTablas() {
 	cerrarFuncion();
 	liberar_tabla(tablaSimbolosGlobal);
 	tablaSimbolosGlobal = NULL;
