@@ -1,0 +1,2 @@
+TOK_MAIN		100	main
+TOK_INT		101	int
