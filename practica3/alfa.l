@@ -49,11 +49,13 @@ false {col+=yyleng; return TOK_FALSE;}
 >= {col+=yyleng; return TOK_MAYORIGUAL;}
 "<" {col+=yyleng; return TOK_MENOR;}   
 > {col+=yyleng; return TOK_MAYOR;}
+
 \n {fil++; col=1;}
-[ \t] {col+=yyleng;//fprintf(output,"he leido espacio\n");
-}
-"//"[^\n]*\n {fil++; col=1;//fprintf(output,"he leido comentario\n");
-}
+
+[ \t] {col+=yyleng;}
+
+"//"[^\n]*\n {fil++; col=1;}
+
 [0-9]+ {col+=yyleng; return TOK_CONSTANTE_ENTERA;}
 
 [a-zA-Z][0-9a-zA-Z_]* {		

@@ -11,7 +11,7 @@ prueba:
 	./pruebaMorfo entrada2.txt misalida2.txt
 	./pruebaMorfo entrada3.txt misalida3.txt	
 zip:
-	zip GomezJavier_LiCarlos_morfo.zip	ej_flex_1.* tokens.h
+	zip GomezJavier_LiCarlos_morfo.zip alfa.l tokens.h pruebaMorfo.c Makefile
 
 .PHONY: clean
 
