@@ -7,9 +7,9 @@ extern int yyleng;
 extern char* yytext;
 extern int fil;
 extern int col;
-
+FILE *output;
 int main(int argc, char**argv) {
-	FILE *output;
+
 	long int retVal;
 	if (argc == 2) {
 		yyin = fopen(argv[1], "r");
@@ -24,10 +24,6 @@ int main(int argc, char**argv) {
 
 	retVal = yylex();
 	while (retVal) {
-		if (yyleng > 100) {
-			fprintf(stderr, "****Error en [lin %d, col %d]: identificador demasiado largo (%s)", fil, col, yytext);
-			break;
-		}
 		switch (retVal) {
 
 		/* Palabras reservadas */
@@ -150,7 +146,6 @@ int main(int argc, char**argv) {
 
 		/* Errores */
 		case TOK_ERROR:
-			fprintf(stderr, "****Error en [lin %d, col %d]: simbolo no permitido (%s)", fil, col, yytext);
 			fclose(output);
 			fclose(yyin);
 			return 0;

@@ -2,7 +2,8 @@
 	#include <stdio.h>
 	#include "tokens.h"
 	int fil=1;
-	int col=0;
+	int col=1;
+	extern FILE* output;
 %}
 
 %option noyywrap
@@ -48,12 +49,22 @@ false {col+=yyleng; return TOK_FALSE;}
 >= {col+=yyleng; return TOK_MAYORIGUAL;}
 "<" {col+=yyleng; return TOK_MENOR;}   
 > {col+=yyleng; return TOK_MAYOR;}
-[ \t] {col+=yyleng;}
-\n {fil++; col=0;}
-
-"//"[^\n]*\n {fil++; col=0;}
+\n {fil++; col=1;}
+[ \t] {col+=yyleng;//fprintf(output,"he leido espacio\n");
+}
+"//"[^\n]*\n {fil++; col=1;//fprintf(output,"he leido comentario\n");
+}
 [0-9]+ {col+=yyleng; return TOK_CONSTANTE_ENTERA;}
-[a-zA-Z][0-9a-zA-Z_]* {col+=yyleng; return TOK_IDENTIFICADOR;}
 
-. {return col+=yyleng; return TOK_ERROR;}
+[a-zA-Z][0-9a-zA-Z_]* {		
+	if (yyleng > 100) {
+		fprintf(stderr, "****Error en [lin %d, col %d]: identificador demasiado largo (%s)\n", fil, col, yytext);
+		return TOK_ERROR;
+		}
+	col+=yyleng; return TOK_IDENTIFICADOR;}
+
+
+. {
+fprintf(stderr, "****Error en [lin %d, col %d]: simbolo no permitido (%s)\n", fil, col, yytext);
+col+=yyleng; return TOK_ERROR;}
 %%
