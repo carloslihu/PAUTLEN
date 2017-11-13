@@ -1,6 +1,7 @@
 %{
 	#include <stdio.h>
 	#include "tokens.h"
+	#include "y.tab.h"
 	int fil=1;
 	int col=1;
 	extern FILE* output;
@@ -12,16 +13,17 @@
 
 %%
 
-"(" {printf("TOKEN: (\n"); return TOK_PARENTESISIZQUIERDO;}
-")" {printf("TOKEN: )\n"); return TOK_PARENTESISDERECHO;}	
-"+" {printf("TOKEN: +\n"); return TOK_MAS;}
-- {printf("TOKEN: - \n"); return TOK_MENOS;}
-"/" {printf("TOKEN: /\n"); return TOK_DIVISION;}
-"*" {printf("TOKEN: *\n"); return TOK_ASTERISCO;}
+[ \t]	; // ignore all whitespace
+"(" {printf("TOKEN: (\n"); return yytext[0];}
+")" {printf("TOKEN: )\n"); return yytext[0];}	
+"+" {printf("TOKEN: +\n"); return yytext[0];}
+- {printf("TOKEN: - \n"); return yytext[0];}
+"/" {printf("TOKEN: /\n"); return yytext[0];}
+"*" {printf("TOKEN: *\n"); return yytext[0];}
 
 
-[0-9]+ {col+=yyleng; return TOK_CTE_ENTERA;}
-[0-9]+.[0-9]+ {col+=yyleng; return TOK_CTE_REAL;}
+[0-9]+ {printf("TOKEN: %s\n",yytext); return TOK_CTE_ENTERA;}
+[0-9]+"."[0-9]+ {printf("TOKEN: %s\n",yytext); return TOK_CTE_REAL;}
 
 
 . {

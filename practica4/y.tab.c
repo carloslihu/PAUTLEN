@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.0.2.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.4"
+#define YYBISON_VERSION "3.0.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -64,9 +64,18 @@
 /* Copy the first part of user declarations.  */
 #line 1 "ejercicio1.y" /* yacc.c:339  */
 
+	#include <stdio.h>
+	#include "tokens.h"
+	#include "y.tab.h"
+	extern FILE* output;
 
+	int yyerror(char* s){
+		if(yylval != TOK_ERROR)
+			printf("%d : %s\n",yylval, s);
+		return -1;
+	}
 
-#line 70 "y.tab.c" /* yacc.c:339  */
+#line 79 "y.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -127,7 +136,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 131 "y.tab.c" /* yacc.c:358  */
+#line 140 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -425,8 +434,8 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    14,    14,    15,    16,    17,    18,    19,    20,    22,
-      23
+       0,    23,    23,    24,    25,    26,    27,    28,    29,    31,
+      32
 };
 #endif
 
@@ -474,8 +483,8 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,     9,    10,     0,     0,     0,     8,     6,     0,     1,
-       0,     0,     0,     0,     7,     2,     3,     4,     5
+       0,     9,    10,     0,     0,     0,     2,     7,     0,     1,
+       0,     0,     0,     0,     8,     3,     4,     5,     6
 };
 
   /* YYPGOTO[NTERM-NUM].  */
@@ -525,7 +534,7 @@ static const yytype_uint8 yyr1[] =
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
-       0,     2,     3,     3,     3,     3,     2,     3,     1,     1,
+       0,     2,     1,     3,     3,     3,     3,     2,     3,     1,
        1
 };
 
@@ -1203,49 +1212,49 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 14 "ejercicio1.y" /* yacc.c:1646  */
-    {printf("REGLA: exp: exp + exp\n");}
-#line 1209 "y.tab.c" /* yacc.c:1646  */
+#line 23 "ejercicio1.y" /* yacc.c:1646  */
+    {printf("REGLA: exp: constante\n");}
+#line 1218 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 15 "ejercicio1.y" /* yacc.c:1646  */
-    {printf("REGLA: exp: exp - exp\n");}
-#line 1215 "y.tab.c" /* yacc.c:1646  */
+#line 24 "ejercicio1.y" /* yacc.c:1646  */
+    {printf("REGLA: exp: exp + exp\n");}
+#line 1224 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 16 "ejercicio1.y" /* yacc.c:1646  */
-    {printf("REGLA: exp: exp * exp\n");}
-#line 1221 "y.tab.c" /* yacc.c:1646  */
+#line 25 "ejercicio1.y" /* yacc.c:1646  */
+    {printf("REGLA: exp: exp - exp\n");}
+#line 1230 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 17 "ejercicio1.y" /* yacc.c:1646  */
-    {printf("REGLA: exp: exp / exp\n");}
-#line 1227 "y.tab.c" /* yacc.c:1646  */
+#line 26 "ejercicio1.y" /* yacc.c:1646  */
+    {printf("REGLA: exp: exp * exp\n");}
+#line 1236 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 18 "ejercicio1.y" /* yacc.c:1646  */
-    {printf("REGLA: exp: - exp\n");}
-#line 1233 "y.tab.c" /* yacc.c:1646  */
+#line 27 "ejercicio1.y" /* yacc.c:1646  */
+    {printf("REGLA: exp: exp / exp\n");}
+#line 1242 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 19 "ejercicio1.y" /* yacc.c:1646  */
-    {printf("REGLA: exp: (exp)\n");}
-#line 1239 "y.tab.c" /* yacc.c:1646  */
+#line 28 "ejercicio1.y" /* yacc.c:1646  */
+    {printf("REGLA: exp: - exp\n");}
+#line 1248 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 20 "ejercicio1.y" /* yacc.c:1646  */
-    {printf("REGLA: exp: constante\n");}
-#line 1245 "y.tab.c" /* yacc.c:1646  */
+#line 29 "ejercicio1.y" /* yacc.c:1646  */
+    {printf("REGLA: exp: (exp)\n");}
+#line 1254 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1249 "y.tab.c" /* yacc.c:1646  */
+#line 1258 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1473,4 +1482,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 25 "ejercicio1.y" /* yacc.c:1906  */
+#line 34 "ejercicio1.y" /* yacc.c:1906  */
