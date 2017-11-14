@@ -5,8 +5,8 @@
 	extern FILE* output;
 
 	int yyerror(char* s){
-		if(yylval != TOK_ERROR)
-			printf("%d : %s\n",yylval, s);
+			if(yylval != TOK_ERROR)
+			printf("%s\n", s);
 		return -1;
 	}
 %}

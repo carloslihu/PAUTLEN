@@ -472,7 +472,8 @@ char *yytext;
 	int fil=1;
 	int col=1;
 	extern FILE* output;
-#line 476 "lex.yy.c"
+	extern int ylval;
+#line 477 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -659,10 +660,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 14 "ejercicio1.l"
+#line 15 "ejercicio1.l"
 
 
-#line 666 "lex.yy.c"
+#line 667 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -747,62 +748,64 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 16 "ejercicio1.l"
+#line 17 "ejercicio1.l"
 ; // ignore all whitespace
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 17 "ejercicio1.l"
-{printf("TOKEN: (\n"); return yytext[0];}
+#line 18 "ejercicio1.l"
+{printf("TOKEN: (\n"); yylval = yytext[0]; return yytext[0];}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 18 "ejercicio1.l"
-{printf("TOKEN: )\n"); return yytext[0];}	
+#line 19 "ejercicio1.l"
+{printf("TOKEN: )\n"); yylval = yytext[0]; return yytext[0];}	
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 19 "ejercicio1.l"
-{printf("TOKEN: +\n"); return yytext[0];}
+#line 20 "ejercicio1.l"
+{printf("TOKEN: +\n"); yylval = yytext[0]; return yytext[0];}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 20 "ejercicio1.l"
-{printf("TOKEN: - \n"); return yytext[0];}
+#line 21 "ejercicio1.l"
+{printf("TOKEN: - \n"); yylval = yytext[0]; return yytext[0];}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 21 "ejercicio1.l"
-{printf("TOKEN: /\n"); return yytext[0];}
+#line 22 "ejercicio1.l"
+{printf("TOKEN: /\n"); yylval = yytext[0]; return yytext[0];}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 22 "ejercicio1.l"
-{printf("TOKEN: *\n"); return yytext[0];}
+#line 23 "ejercicio1.l"
+{printf("TOKEN: *\n"); yylval = yytext[0]; return yytext[0];}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 25 "ejercicio1.l"
-{printf("TOKEN: %s\n",yytext); return TOK_CTE_ENTERA;}
+#line 26 "ejercicio1.l"
+{printf("TOKEN: %s\n",yytext); yylval = TOK_CTE_ENTERA; return TOK_CTE_ENTERA;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 26 "ejercicio1.l"
-{printf("TOKEN: %s\n",yytext); return TOK_CTE_REAL;}
+#line 27 "ejercicio1.l"
+{printf("TOKEN: %s\n",yytext); yylval = TOK_CTE_REAL; return TOK_CTE_REAL;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 29 "ejercicio1.l"
+#line 30 "ejercicio1.l"
 {
 fprintf(stderr, "****Error en [lin %d, col %d]: simbolo no permitido (%s)\n", fil, col, yytext);
-col+=yyleng; return TOK_ERROR;}
+col+=yyleng;
+yylval = TOK_ERROR; 
+return TOK_ERROR;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 32 "ejercicio1.l"
+#line 35 "ejercicio1.l"
 ECHO;
 	YY_BREAK
-#line 806 "lex.yy.c"
+#line 809 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1800,6 +1803,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 32 "ejercicio1.l"
+#line 35 "ejercicio1.l"
 
 
