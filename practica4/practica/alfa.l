@@ -62,12 +62,14 @@ false {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_FALSE;}
 [a-zA-Z][0-9a-zA-Z_]* {		
 	if (yyleng > 100) {
 		fprintf(stderr, "****Error en [lin %d, col %d]: identificador demasiado largo (%s)\n", fil, col, yytext);
-		return TOK_ERROR;
+		yylval = -1;
+		return -1;
 		}
 	col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_IDENTIFICADOR;}
 
 
 . {
 fprintf(stderr, "****Error en [lin %d, col %d]: simbolo no permitido (%s)\n", fil, col, yytext);
-col+=yyleng; return TOK_ERROR;}
+yylval = -1;
+return -1;}
 %%
