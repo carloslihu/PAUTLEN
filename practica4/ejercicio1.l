@@ -26,7 +26,6 @@
 [0-9]+ {printf("TOKEN: %s\n",yytext); yylval = TOK_CTE_ENTERA; return TOK_CTE_ENTERA;}
 [0-9]+"."[0-9]+ {printf("TOKEN: %s\n",yytext); yylval = TOK_CTE_REAL; return TOK_CTE_REAL;}
 
-
 . {
 fprintf(stderr, "****Error en [lin %d, col %d]: simbolo no permitido (%s)\n", fil, col, yytext);
 col+=yyleng;

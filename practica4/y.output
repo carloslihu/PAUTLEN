@@ -1,31 +1,33 @@
 Gramática
 
-    0 $accept: exp $end
+    0 $accept: S $end
 
-    1 exp: constante
-    2    | exp '+' exp
-    3    | exp '-' exp
-    4    | exp '*' exp
-    5    | exp '/' exp
-    6    | '-' exp
-    7    | '(' exp ')'
+    1 S: exp
 
-    8 constante: TOK_CTE_ENTERA
-    9          | TOK_CTE_REAL
+    2 exp: constante
+    3    | exp '+' exp
+    4    | exp '-' exp
+    5    | exp '*' exp
+    6    | exp '/' exp
+    7    | '-' exp
+    8    | '(' exp ')'
+
+    9 constante: TOK_CTE_ENTERA
+   10          | TOK_CTE_REAL
 
 
 Terminales con las reglas donde aparecen
 
 $end (0) 0
-'(' (40) 7
-')' (41) 7
-'*' (42) 4
-'+' (43) 2
-'-' (45) 3 6
-'/' (47) 5
+'(' (40) 8
+')' (41) 8
+'*' (42) 5
+'+' (43) 3
+'-' (45) 4 7
+'/' (47) 6
 error (256)
-TOK_CTE_ENTERA (258) 8
-TOK_CTE_REAL (259) 9
+TOK_CTE_ENTERA (258) 9
+TOK_CTE_REAL (259) 10
 MENOSU (260)
 
 
@@ -33,55 +35,45 @@ No terminales con las reglas donde aparecen
 
 $accept (12)
     en la izquierda: 0
-exp (13)
-    en la izquierda: 1 2 3 4 5 6 7, en la derecha: 0 2 3 4 5 6 7
-constante (14)
-    en la izquierda: 8 9, en la derecha: 1
+S (13)
+    en la izquierda: 1, en la derecha: 0
+exp (14)
+    en la izquierda: 2 3 4 5 6 7 8, en la derecha: 1 3 4 5 6 7 8
+constante (15)
+    en la izquierda: 9 10, en la derecha: 2
 
 
 Estado 0
 
-    0 $accept: . exp $end
+    0 $accept: . S $end
 
     TOK_CTE_ENTERA  desplazar e ir al estado 1
     TOK_CTE_REAL    desplazar e ir al estado 2
     '-'             desplazar e ir al estado 3
     '('             desplazar e ir al estado 4
 
-    exp        ir al estado 5
-    constante  ir al estado 6
+    S          ir al estado 5
+    exp        ir al estado 6
+    constante  ir al estado 7
 
 
 Estado 1
 
-    8 constante: TOK_CTE_ENTERA .
-
-    $default  reduce usando la regla 8 (constante)
-
-
-Estado 2
-
-    9 constante: TOK_CTE_REAL .
+    9 constante: TOK_CTE_ENTERA .
 
     $default  reduce usando la regla 9 (constante)
 
 
+Estado 2
+
+   10 constante: TOK_CTE_REAL .
+
+    $default  reduce usando la regla 10 (constante)
+
+
 Estado 3
 
-    6 exp: '-' . exp
-
-    TOK_CTE_ENTERA  desplazar e ir al estado 1
-    TOK_CTE_REAL    desplazar e ir al estado 2
-    '-'             desplazar e ir al estado 3
-    '('             desplazar e ir al estado 4
-
-    exp        ir al estado 7
-    constante  ir al estado 6
-
-
-Estado 4
-
-    7 exp: '(' . exp ')'
+    7 exp: '-' . exp
 
     TOK_CTE_ENTERA  desplazar e ir al estado 1
     TOK_CTE_REAL    desplazar e ir al estado 2
@@ -89,80 +81,88 @@ Estado 4
     '('             desplazar e ir al estado 4
 
     exp        ir al estado 8
-    constante  ir al estado 6
+    constante  ir al estado 7
 
 
-Estado 5
+Estado 4
 
-    0 $accept: exp . $end
-    2 exp: exp . '+' exp
-    3    | exp . '-' exp
-    4    | exp . '*' exp
-    5    | exp . '/' exp
-
-    $end  desplazar e ir al estado 9
-    '+'   desplazar e ir al estado 10
-    '-'   desplazar e ir al estado 11
-    '*'   desplazar e ir al estado 12
-    '/'   desplazar e ir al estado 13
-
-
-Estado 6
-
-    1 exp: constante .
-
-    $default  reduce usando la regla 1 (exp)
-
-
-Estado 7
-
-    2 exp: exp . '+' exp
-    3    | exp . '-' exp
-    4    | exp . '*' exp
-    5    | exp . '/' exp
-    6    | '-' exp .
-
-    $default  reduce usando la regla 6 (exp)
-
-
-Estado 8
-
-    2 exp: exp . '+' exp
-    3    | exp . '-' exp
-    4    | exp . '*' exp
-    5    | exp . '/' exp
-    7    | '(' exp . ')'
-
-    '+'  desplazar e ir al estado 10
-    '-'  desplazar e ir al estado 11
-    '*'  desplazar e ir al estado 12
-    '/'  desplazar e ir al estado 13
-    ')'  desplazar e ir al estado 14
-
-
-Estado 9
-
-    0 $accept: exp $end .
-
-    $default  aceptar
-
-
-Estado 10
-
-    2 exp: exp '+' . exp
+    8 exp: '(' . exp ')'
 
     TOK_CTE_ENTERA  desplazar e ir al estado 1
     TOK_CTE_REAL    desplazar e ir al estado 2
     '-'             desplazar e ir al estado 3
     '('             desplazar e ir al estado 4
 
-    exp        ir al estado 15
-    constante  ir al estado 6
+    exp        ir al estado 9
+    constante  ir al estado 7
+
+
+Estado 5
+
+    0 $accept: S . $end
+
+    $end  desplazar e ir al estado 10
+
+
+Estado 6
+
+    1 S: exp .
+    3 exp: exp . '+' exp
+    4    | exp . '-' exp
+    5    | exp . '*' exp
+    6    | exp . '/' exp
+
+    '+'  desplazar e ir al estado 11
+    '-'  desplazar e ir al estado 12
+    '*'  desplazar e ir al estado 13
+    '/'  desplazar e ir al estado 14
+
+    $default  reduce usando la regla 1 (S)
+
+
+Estado 7
+
+    2 exp: constante .
+
+    $default  reduce usando la regla 2 (exp)
+
+
+Estado 8
+
+    3 exp: exp . '+' exp
+    4    | exp . '-' exp
+    5    | exp . '*' exp
+    6    | exp . '/' exp
+    7    | '-' exp .
+
+    $default  reduce usando la regla 7 (exp)
+
+
+Estado 9
+
+    3 exp: exp . '+' exp
+    4    | exp . '-' exp
+    5    | exp . '*' exp
+    6    | exp . '/' exp
+    8    | '(' exp . ')'
+
+    '+'  desplazar e ir al estado 11
+    '-'  desplazar e ir al estado 12
+    '*'  desplazar e ir al estado 13
+    '/'  desplazar e ir al estado 14
+    ')'  desplazar e ir al estado 15
+
+
+Estado 10
+
+    0 $accept: S $end .
+
+    $default  aceptar
 
 
 Estado 11
 
-    3 exp: exp '-' . exp
+    3 exp: exp '+' . exp
 
     TOK_CTE_ENTERA  desplazar e ir al estado 1
     TOK_CTE_REAL    desplazar e ir al estado 2
@@ -170,12 +170,12 @@ Estado 11
     '('             desplazar e ir al estado 4
 
     exp        ir al estado 16
-    constante  ir al estado 6
+    constante  ir al estado 7
 
 
 Estado 12
 
-    4 exp: exp '*' . exp
+    4 exp: exp '-' . exp
 
     TOK_CTE_ENTERA  desplazar e ir al estado 1
     TOK_CTE_REAL    desplazar e ir al estado 2
@@ -183,12 +183,12 @@ Estado 12
     '('             desplazar e ir al estado 4
 
     exp        ir al estado 17
-    constante  ir al estado 6
+    constante  ir al estado 7
 
 
 Estado 13
 
-    5 exp: exp '/' . exp
+    5 exp: exp '*' . exp
 
     TOK_CTE_ENTERA  desplazar e ir al estado 1
     TOK_CTE_REAL    desplazar e ir al estado 2
@@ -196,61 +196,74 @@ Estado 13
     '('             desplazar e ir al estado 4
 
     exp        ir al estado 18
-    constante  ir al estado 6
+    constante  ir al estado 7
 
 
 Estado 14
 
-    7 exp: '(' exp ')' .
+    6 exp: exp '/' . exp
 
-    $default  reduce usando la regla 7 (exp)
+    TOK_CTE_ENTERA  desplazar e ir al estado 1
+    TOK_CTE_REAL    desplazar e ir al estado 2
+    '-'             desplazar e ir al estado 3
+    '('             desplazar e ir al estado 4
+
+    exp        ir al estado 19
+    constante  ir al estado 7
 
 
 Estado 15
 
-    2 exp: exp . '+' exp
-    2    | exp '+' exp .
-    3    | exp . '-' exp
-    4    | exp . '*' exp
-    5    | exp . '/' exp
+    8 exp: '(' exp ')' .
 
-    '*'  desplazar e ir al estado 12
-    '/'  desplazar e ir al estado 13
-
-    $default  reduce usando la regla 2 (exp)
+    $default  reduce usando la regla 8 (exp)
 
 
 Estado 16
 
-    2 exp: exp . '+' exp
-    3    | exp . '-' exp
-    3    | exp '-' exp .
-    4    | exp . '*' exp
-    5    | exp . '/' exp
+    3 exp: exp . '+' exp
+    3    | exp '+' exp .
+    4    | exp . '-' exp
+    5    | exp . '*' exp
+    6    | exp . '/' exp
 
-    '*'  desplazar e ir al estado 12
-    '/'  desplazar e ir al estado 13
+    '*'  desplazar e ir al estado 13
+    '/'  desplazar e ir al estado 14
 
     $default  reduce usando la regla 3 (exp)
 
 
 Estado 17
 
-    2 exp: exp . '+' exp
-    3    | exp . '-' exp
-    4    | exp . '*' exp
-    4    | exp '*' exp .
-    5    | exp . '/' exp
+    3 exp: exp . '+' exp
+    4    | exp . '-' exp
+    4    | exp '-' exp .
+    5    | exp . '*' exp
+    6    | exp . '/' exp
+
+    '*'  desplazar e ir al estado 13
+    '/'  desplazar e ir al estado 14
 
     $default  reduce usando la regla 4 (exp)
 
 
 Estado 18
 
-    2 exp: exp . '+' exp
-    3    | exp . '-' exp
-    4    | exp . '*' exp
-    5    | exp . '/' exp
-    5    | exp '/' exp .
+    3 exp: exp . '+' exp
+    4    | exp . '-' exp
+    5    | exp . '*' exp
+    5    | exp '*' exp .
+    6    | exp . '/' exp
 
     $default  reduce usando la regla 5 (exp)
+
+
+Estado 19
+
+    3 exp: exp . '+' exp
+    4    | exp . '-' exp
+    5    | exp . '*' exp
+    6    | exp . '/' exp
+    6    | exp '/' exp .
+
+    $default  reduce usando la regla 6 (exp)

@@ -5,8 +5,9 @@
 	extern FILE* output;
 
 	int yyerror(char* s){
-			if(yylval != TOK_ERROR)
+		if(yylval != TOK_ERROR && yylval != 0)
 			printf("%s\n", s);
+		printf("\nEXPRESION INCORRECTA\n");
 		return -1;
 	}
 %}
@@ -20,6 +21,8 @@
 
 
 %%
+S: exp {printf("\nEXPRESION CORRECTA\n");}
+
 exp: constante {printf("REGLA: exp: constante\n");}
 	| exp '+' exp  {printf("REGLA: exp: exp + exp\n");}
 	| exp '-' exp {printf("REGLA: exp: exp - exp\n");}
