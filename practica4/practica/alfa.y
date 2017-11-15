@@ -70,19 +70,20 @@
 %%
 
 S: programa {printf("\nEXPRESION CORRECTA\n");}
-programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA
 
-declaraciones: declaracion
-	| declaracion declaraciones
+programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA {fprintf(output, ";R1:\tmain { <declaraciones> <funciones> <sentencias> }\n");}
+
+declaraciones: declaracion {printf("REGLA: declaracion\n");}
+	| declaracion declaraciones {printf("REGLA: declaraciones\n");}
 	;
 
-declaracion: clase identificadores TOK_PUNTOYCOMA
+declaracion: clase identificadores TOK_PUNTOYCOMA {printf("REGLA: clase identificadores ;\n");}
 
-clase: clase_escalar
-	| clase_vector
+clase: clase_escalar {printf("REGLA: clase_escalar\n");}
+	| clase_vector {printf("REGLA: clase_vector\n");}
 	;
 
-clase_escalar: tipo
+clase_escalar: tipo {printf("REGLA: tipo\n");}
 
 tipo: TOK_INT
 	| TOK_BOOLEAN
