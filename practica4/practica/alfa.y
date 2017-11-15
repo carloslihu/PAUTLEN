@@ -71,79 +71,85 @@
 
 S: programa {printf("\nEXPRESION CORRECTA\n");}
 
-programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA {fprintf(output, ";R1:\tmain { <declaraciones> <funciones> <sentencias> }\n");}
+programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA {fprintf(output, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");}
 
-declaraciones: declaracion {printf("REGLA: declaracion\n");}
-	| declaracion declaraciones {printf("REGLA: declaraciones\n");}
+declaraciones: declaracion {fprintf(output, ";R2:\t<declaraciones> ::= <declaracion>\n");}
+	| declaracion declaraciones {fprintf(output, ";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\n");}
 	;
 
-declaracion: clase identificadores TOK_PUNTOYCOMA {printf("REGLA: clase identificadores ;\n");}
+declaracion: clase identificadores TOK_PUNTOYCOMA {fprintf(output, ";R4:\t<declaracion> ::= <clase> <identificadores>\n");}
 
-clase: clase_escalar {printf("REGLA: clase_escalar\n");}
-	| clase_vector {printf("REGLA: clase_vector\n");}
+clase: clase_escalar {fprintf(output, ";R5:\t<clase> ::= <clase_escalar>\n");}
+	| clase_vector {fprintf(output, ";R7:\t<clase> ::= <clase_vector>\n");}
 	;
 
-clase_escalar: tipo {printf("REGLA: tipo\n");}
+clase_escalar: tipo {fprintf(output, ";R9:\t<clase_escalar> ::= <tipo>\n");}
 
-tipo: TOK_INT
-	| TOK_BOOLEAN
+tipo: TOK_INT {fprintf(output, ";R10:\t<tipo> ::= int\n");}
+	| TOK_BOOLEAN {fprintf(output, ";R11:\t<tipo> ::= boolean\n");}
 	;
 
-clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO
+clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO {fprintf(output, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");}
 
-identificadores: identificador
-	| identificador TOK_COMA identificadores
+identificadores: identificador {fprintf(output, ";R18:\t<identificadores> ::= <identificador>\n");}
+	| identificador TOK_COMA identificadores {fprintf(output, ";R19:\t<identificadores> ::= <identificador> , <identificadores>\n");}
 	;
 
-funciones: funcion funciones
-	|
+funciones: funcion funciones {fprintf(output, ";R:20\t<funciones> ::= <funcion> <funciones>\n");}
+	| {fprintf(output, ";R:\t<funciones> ::= \n");}
 	;
 
-funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA
+funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA {fprintf(output, ";R22:\t<funcion> ::= funcion <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion sentencias }\n");}
 
-parametros_funcion: tipo identificador
-
-declaraciones_funcion: declaraciones
-	|
-
-
+parametros_funcion: parametro_funcion resto_parametros_funcion {fprintf(output, ";R23:\t<parametros_funcion> ::= <parametro_funcion> <resto_parametros_funcion>\n");}
+	| {fprintf(output, ";R24:\t<parametros_funcion> ::= \n");}
 	;
 
-sentencias: sentencia
-	| sentencia sentencias
+resto_parametros_funcion: TOK_PUNTOYCOMA parametro_funcion resto_parametros_funcion {fprintf(output, ";R25:\t<resto_parametros_funcion> ::= ; <parametro_funcion> <resto_parametros_funcion>\n");}
+	| {fprintf(output, ";R26:\t<resto_parametros_funcion> ::= \n");}
 	;
 
-sentencia: sentencia_simple TOK_PUNTOYCOMA
-	| bloque
+parametro_funcion: tipo identificador {fprintf(output, ";R:27\t<parametro_funcion> ::= <tipo> <identificador>\n");}
+
+declaraciones_funcion: declaraciones {fprintf(output, ";R28:\t<declaraciones_funcion> ::= <declaraciones>\n");}
+	| {fprintf(output, ";R29:\t<declaraciones_funcion> ::= \n");}
 	;
 
-sentencia_simple: asignacion
-	| lectura
-	| escritura
-	| retorno_funcion
+sentencias: sentencia {fprintf(output, ";R30:\t<sentencias> ::= <sentencia>\n");}
+	| sentencia sentencias {fprintf(output, ";R31:\t<sentencias> ::= <sentencia> <sentencias>\n");}
 	;
 
-bloque: condicional
-	| bucle
+sentencia: sentencia_simple TOK_PUNTOYCOMA {fprintf(output, ";R32:\t<sentencia> ::= <sentencia_simple> ;\n");}
+	| bloque {fprintf(output, ";R33:\t<sentencia> ::= <bloque>\n");}
 	;
 
-asignacion: identificador TOK_ASIGNACION exp
-	| elemento_vector TOK_ASIGNACION exp
+sentencia_simple: asignacion {fprintf(output, ";R34:\t<sentencia_simple> ::= <asignacion>\n");}
+	| lectura {fprintf(output, ";R35:\t<sentencia_simple> ::= <lectura>\n");}
+	| escritura {fprintf(output, ";R36:\t<sentencia_simple> ::= <escritura>\n");}
+	| retorno_funcion {fprintf(output, ";R38:\t<sentencia_simple> ::= <retorno_funcion>\n");}
 	;
 
-elemento_vector: identificador TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
-
-condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA
-	| TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA
+bloque: condicional {fprintf(output, ";R40:\t<bloque> ::= <condicional>\n");}
+	| bucle {fprintf(output, ";R41:\t<bloque> ::= <bucle>\n");}
 	;
 
-bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA
+asignacion: identificador TOK_ASIGNACION exp {fprintf(output, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");}
+	| elemento_vector TOK_ASIGNACION exp {fprintf(output, ";R44:\t<asignacion> ::= <elemento_vector> = <exp>\n");}
+	;
 
-lectura: TOK_SCANF identificador
+elemento_vector: identificador TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO {fprintf(output, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");}
 
-escritura: TOK_PRINTF exp
+condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(output, ";R50:\t<condicional> ::= if ( <exp> ) { <sentencias> }\n");}
+	| TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(output, ";R51:\t<condicional> ::= if ( <exp> ) { <sentencias> } else { <sentencias> }\n");}
+	;
 
-retorno_funcion: TOK_RETURN exp
+bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(output, ";R52:\t<bucle> ::= while ( <exp> ) { <sentencias> }\n");}
+
+lectura: TOK_SCANF identificador {fprintf(output, ";R54:\t<lectura> ::= scanf <identificador>\n");}
+
+escritura: TOK_PRINTF exp {fprintf(output, ";R56:\t<escritura> ::= printf <exp>\n");}
+
+retorno_funcion: TOK_RETURN exp {fprintf(output, ";R61:\t<retorno_funcion> ::= return <exp>\n");}
 
 exp: exp TOK_MAS exp  {printf("REGLA: exp: exp + exp\n");}
 	| exp TOK_MENOS exp {printf("REGLA: exp: exp - exp\n");}
