@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "generacion.h"
+#include "tablaSimbolos.h"
 
 
 typedef struct{

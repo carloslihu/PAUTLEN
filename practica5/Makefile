@@ -19,7 +19,7 @@ all:
 	mv *.c $(SDIR)
 	mv *.h $(IDIR)
 
-alfa: $(OBJ) $(ODIR)/alfa.o
+alfa: $(OBJ) $(ODIR)/main.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
@@ -29,3 +29,4 @@ zip:
 
 .PHONY: clean
 clean:
+	

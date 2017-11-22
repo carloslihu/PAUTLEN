@@ -23,4 +23,4 @@ void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
 void o(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
 void y(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
 
-/*#endif  */
+#endif
