@@ -24,8 +24,14 @@ while {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_WHILE;}
 scanf {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_SCANF;}
 printf {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_PRINTF;}
 return {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_RETURN;}
-true {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_TRUE;}
-false {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_FALSE;}
+true {col+=yyleng; 
+	strcpy(yylval.atributos.lexema , yytext);
+	fprintf(output, ";D:\t%s\n",yytext); 
+	return TOK_TRUE;}
+false {col+=yyleng; 
+	strcpy(yylval.atributos.lexema , yytext);
+	fprintf(output, ";D:\t%s\n",yytext); 
+	return TOK_FALSE;}
 
 
 ; {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_PUNTOYCOMA;}
@@ -57,7 +63,10 @@ false {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_FALSE;}
 
 "//"[^\n]*\n {fil++; col=1;}
 
-[0-9]+ {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_CONSTANTE_ENTERA;}
+[0-9]+ {col+=yyleng;
+	strcpy(yylval.atributos.lexema , yytext); 
+	fprintf(output, ";D:\t%s\n",yytext); 
+	return TOK_CONSTANTE_ENTERA;}
 
 [a-zA-Z][0-9a-zA-Z_]* {		
 	if (yyleng > 100) {
@@ -67,6 +76,7 @@ false {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_FALSE;}
 		}
 	col+=yyleng;
 	fprintf(output, ";D:\t%s\n",yytext);
+	strcpy(yylval.atributos.lexema , yytext);
 	return TOK_IDENTIFICADOR;}
 
 
