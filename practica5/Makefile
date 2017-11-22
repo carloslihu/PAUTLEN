@@ -4,14 +4,12 @@ SDIR=src
 CC=gcc
 CFLAGS= -g -Wall
 
-_FILES=tablaHash tablaSimbolos generacion
-#_DEPS =tablaHash.h tablaSimbolos.h
-#_OBJ =tablaHash.o tablaSimbolos.o
+_FILES=tablaHash tablaSimbolos generacion y.tab
 
 
-DEPS = $(patsubst %,$(IDIR)/%.h,$(_FILES))
+DEPS = $(patsubst %,$(IDIR)/%.h,$(_FILES)) 
 
-OBJ = $(patsubst %,$(ODIR)/%.o,$(_FILES))
+OBJ = $(patsubst %,$(ODIR)/%.o,$(_FILES)) lex.yy.o
 
 all:
 	bison -dyv $(SDIR)/alfa.y
@@ -27,6 +25,10 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 
 zip:
 
+
 .PHONY: clean
+
 clean:
-	
+	-rm $(ODIR)/*.o $(IDIR)/y.tab.h 
+	-rm $(SDIR)/alfa.c $(SDIR)/lex.yy.c $(SDIR)/y.tab.c
+	-rm y.output
