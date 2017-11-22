@@ -254,7 +254,11 @@ constante_logica: TOK_TRUE {fprintf(output, ";R102:\t<constante_logica> ::= true
 	| TOK_FALSE {fprintf(output, ";R103:\t<constante_logica> ::= false\n");}
 	;
 
-constante_entera: TOK_CONSTANTE_ENTERA {fprintf(output,";R104:\t<constante_entera> ::= TOK_CONSTANTE_ENTERA\n");}
+constante_entera: TOK_CONSTANTE_ENTERA {
+		$$.tipo = ENTERO;
+		$$.valor_entero = $1.valor_entero;
+		fprintf(output,";R104:\t<constante_entera> ::= TOK_CONSTANTE_ENTERA\n");
+	}
 
 identificador: TOK_IDENTIFICADOR {
 		strcpy($$.lexema, $1.lexema);

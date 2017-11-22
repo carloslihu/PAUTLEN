@@ -65,8 +65,6 @@ false {col+=yyleng;
 "//"[^\n]*\n {fil++; col=1;}
 
 [0-9]+ {col+=yyleng;
-	yylval.tipo = ENTERO;
-	yylval.valor_entero = atoi(yytext);
 	fprintf(output, ";D:\t%s\n",yytext); 
 	return TOK_CONSTANTE_ENTERA;}
 
