@@ -72,7 +72,7 @@ false {col+=yyleng;
 [a-zA-Z][0-9a-zA-Z_]* {		
 	if (yyleng > 100) {
 		fprintf(stderr, "****Error en [lin %d, col %d]: identificador demasiado largo (%s)\n", fil, col, yytext);
-		yylval = -1;
+		yylval.atributos.tipo = -1;
 		return -1;
 		}
 	col+=yyleng;
@@ -83,6 +83,6 @@ false {col+=yyleng;
 
 . {
 fprintf(stderr, "****Error en [lin %d, col %d]: simbolo no permitido (%s)\n", fil, col, yytext);
-yylval.tipo = -1;
+yylval.atributos.tipo = -1;
 return -1;}
 %%

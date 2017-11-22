@@ -9,7 +9,7 @@ _FILES=tablaHash tablaSimbolos generacion y.tab
 
 DEPS = $(patsubst %,$(IDIR)/%.h,$(_FILES)) 
 
-OBJ = $(patsubst %,$(ODIR)/%.o,$(_FILES)) lex.yy.o
+OBJ = $(patsubst %,$(ODIR)/%.o,$(_FILES)) $(ODIR)/lex.yy.o
 
 all:
 	bison -dyv $(SDIR)/alfa.y

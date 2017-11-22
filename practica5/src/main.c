@@ -15,7 +15,11 @@ int main(int argc, char** argv){
   } else { 
     fprintf(stderr, "formato incorrecto:\n./ejecutable input.txt output.txt\n"); 
     return 1; 
-  } 
+  }
+
+  escribir_cabecera_compatibilidad(output);
+  escribir_subseccion_data(output);
+  escribir_cabecera_bss(output);
   yyparse();
   /*
   if(retVal == 0) 

@@ -117,7 +117,10 @@
 
 programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA {fprintf(output, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");}
 
-declaraciones: declaracion {fprintf(output, ";R2:\t<declaraciones> ::= <declaracion>\n");}
+declaraciones: declaracion {
+		fprintf(output, ";R2:\t<declaraciones> ::= <declaracion>\n");
+		escribir_segmento_codigo(output);
+		}
 	| declaracion declaraciones {fprintf(output, ";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\n");}
 	;
 
@@ -160,7 +163,10 @@ identificadores: identificador {
 	;
 
 funciones: funcion funciones {fprintf(output, ";R:20\t<funciones> ::= <funcion> <funciones>\n");}
-	| {fprintf(output, ";R21:\t<funciones> ::= \n");}
+	| {
+		escribir_inicio_main(output);
+		fprintf(output, ";R21:\t<funciones> ::= \n");
+		}
 	;
 
 funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA {fprintf(output, ";R22:\t<funcion> ::= funcion <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion sentencias }\n");}
@@ -231,10 +237,12 @@ exp: exp TOK_MAS exp  {fprintf(output,";R72:\t<exp> ::= <exp> + <exp>\n");}
 	| TOK_NOT exp {fprintf(output,";R79:\t<exp> ::= ! <exp>\n");}
 	| identificador {fprintf(output,";R80:\t<exp> ::= <identificador>\n");}
 	| constante {
+		char aux[32];//README 32 ??
 		$$.tipo = $1.tipo;
 		$$.valor_entero = $1.valor_entero;
 		fprintf(output,";R81:\t<exp> ::= <constante>\n");
-		escribir_operando(output, itoa($1.valor_entero), 0);
+		sprintf(aux, "%d", $1.valor_entero);
+		escribir_operando(output, aux, 0);
 		}
 	| TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO {fprintf(output,";R82:\t<exp> ::= ( <exp> )\n");}
 	| TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO {fprintf(output,";R83:\t<exp> ::= ( <comparacion> )\n");}
