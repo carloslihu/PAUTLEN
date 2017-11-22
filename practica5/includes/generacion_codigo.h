@@ -1,14 +1,6 @@
-#ifndef​ GENERACION_H
-#define​ GENERACION_H
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define BOOLEANO 1
-#define ENTERO 0
-
-#define TRUE 1
-#define FALSE 0
+/*#ifndef​ GENERACION_CODIGO_H
+#define​ GENERACION_CODIGO_H*/
+#include "types.h"
 
 
 void escribir_cabecera_compatibilidad(FILE* fpasm);
@@ -31,4 +23,4 @@ void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
 void o(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
 void y(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
 
-#endif
+/*#endif  */
