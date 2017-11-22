@@ -5,6 +5,7 @@
 	#include "../includes/y.tab.h"
 	
 	//extern tipo_atributos yylval;
+	extern int yylex();
 	extern FILE* output;
 	extern int fil;
 	extern int col;

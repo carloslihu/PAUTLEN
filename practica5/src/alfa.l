@@ -1,8 +1,7 @@
 %{
-	#include <stdio.h>
 	/*#include "tokens.h"*/
-	#include "alfa.h"
-	#include "y.tab.h"
+	#include "../includes/alfa.h"
+	#include "../includes/y.tab.h"
 	int fil=1;
 	int col=1;
 	extern FILE* output;
