@@ -1,7 +1,7 @@
 %{
 	#include <stdio.h>
 	/*#include "tokens.h"*/
-	#include "y.tab.h"
+	//#include "y.tab.h"
 	#include "alfa.h"
 	extern FILE* output;
 	extern int fil;
@@ -9,7 +9,7 @@
 	extern int yyleng;
 
 	int yyerror(char* s){
-		if(yylval != -1)
+		if(yylval.tipo != -1)
 			fprintf(stderr, "****Error sintactico en [lin %d col %d]\n", fil, col-yyleng);
 		return -1;
 	}
@@ -118,21 +118,41 @@ declaraciones: declaracion {fprintf(output, ";R2:\t<declaraciones> ::= <declarac
 	| declaracion declaraciones {fprintf(output, ";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\n");}
 	;
 
-declaracion: clase identificadores TOK_PUNTOYCOMA {fprintf(output, ";R4:\t<declaracion> ::= <clase> <identificadores> ;\n");}
+declaracion: clase identificadores TOK_PUNTOYCOMA {
+		//TODO generar codigo de declarar variables
+		$2.atributos.tipo = $1.atributos.tipo;
+		fprintf(output, ";R4:\t<declaracion> ::= <clase> <identificadores> ;\n");
+	}
 
-clase: clase_escalar {fprintf(output, ";R5:\t<clase> ::= <clase_escalar>\n");}
+clase: clase_escalar {
+		$$.atributos.tipo = $1.atributos.tipo;
+		fprintf(output, ";R5:\t<clase> ::= <clase_escalar>\n");
+		}
 	| clase_vector {fprintf(output, ";R7:\t<clase> ::= <clase_vector>\n");}
 	;
 
 clase_escalar: tipo {fprintf(output, ";R9:\t<clase_escalar> ::= <tipo>\n");}
 
-tipo: TOK_INT {fprintf(output, ";R10:\t<tipo> ::= int\n");}
-	| TOK_BOOLEAN {fprintf(output, ";R11:\t<tipo> ::= boolean\n");}
+tipo: TOK_INT {
+		$$.atributos.tipo = ENTERO;
+		fprintf(output, ";R10:\t<tipo> ::= int\n");
+		}
+	| TOK_BOOLEAN {
+		$$.atributos.tipo = BOOLEAN;
+		fprintf(output, ";R11:\t<tipo> ::= boolean\n");
+		}
 	;
 
 clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO {fprintf(output, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");}
 
-identificadores: identificador {fprintf(output, ";R18:\t<identificadores> ::= <identificador>\n");}
+identificadores: identificador {
+		$1.atributos.tipo = $$.atributos.tipo;
+		fprintf(output, ";R18:\t<identificadores> ::= <identificador>\n");
+		//TODO generar codigo de declarar variables
+		//TODO arreglar fixme
+		if(declararGlobal($1.atributos.lexema,  VARIABLE, ENTERO, ESCALAR, 0, 0))
+			declarar_variable(output,$1.atributos.lexema, $1.atributos.tipo, 1);//FIXME el ultimo 1 de esta llamada debe ser el tamaño de la variable del identificador
+		}
 	| identificador TOK_COMA identificadores {fprintf(output, ";R19:\t<identificadores> ::= <identificador> , <identificadores>\n");}
 	;
 
@@ -234,6 +254,9 @@ constante_logica: TOK_TRUE {fprintf(output, ";R102:\t<constante_logica> ::= true
 
 constante_entera: TOK_CONSTANTE_ENTERA {fprintf(output,";R104:\t<constante_entera> ::= TOK_CONSTANTE_ENTERA\n");}
 
-identificador: TOK_IDENTIFICADOR {fprintf(output, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");}
+identificador: TOK_IDENTIFICADOR {
+		strcpy($$.atributos.lexema, $1.atributos.lexema);
+		fprintf(output, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");
+		}
 
 %%

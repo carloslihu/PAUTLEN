@@ -1,6 +1,7 @@
 %{
 	#include <stdio.h>
 	/*#include "tokens.h"*/
+	#include "alfa.h"
 	#include "y.tab.h"
 	int fil=1;
 	int col=1;
@@ -64,7 +65,8 @@ false {col+=yyleng;
 "//"[^\n]*\n {fil++; col=1;}
 
 [0-9]+ {col+=yyleng;
-	strcpy(yylval.atributos.lexema , yytext); 
+	yylval.tipo = ENTERO;
+	yylval.valor_entero = atoi(yytext);
 	fprintf(output, ";D:\t%s\n",yytext); 
 	return TOK_CONSTANTE_ENTERA;}
 
@@ -82,6 +84,6 @@ false {col+=yyleng;
 
 . {
 fprintf(stderr, "****Error en [lin %d, col %d]: simbolo no permitido (%s)\n", fil, col, yytext);
-yylval = -1;
+yylval.tipo = -1;
 return -1;}
 %%

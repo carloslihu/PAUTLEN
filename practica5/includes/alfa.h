@@ -1,10 +1,8 @@
 #ifndef _ALFA_H
 #define _ALFA_H
 
+#include "types.h"
 #include "generacion.h"
-
-#define MAX_LONG_ID 100
-#define MAX_TAMANIO_VECTOR 64
 
 
 typedef struct{
