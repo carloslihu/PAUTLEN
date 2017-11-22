@@ -1,5 +1,5 @@
-/*#ifndef​ GENERACION_CODIGO_H
-#define​ GENERACION_CODIGO_H*/
+#ifndef​ GENERACION_H
+#define​ GENERACION_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,4 +31,4 @@ void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
 void o(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
 void y(FILE * fpasm, int es_referencia_1, int es_referencia_2);//probar
 
-/*#endif  */
+#endif
