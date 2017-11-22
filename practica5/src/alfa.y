@@ -84,30 +84,28 @@
 %type <atributos> funciones
 %type <atributos> funcion
 %type <atributos> parametros_funcion
+%type <atributos> resto_parametros_funcion
 %type <atributos> parametro_funcion
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
-%type <atributos> 
+%type <atributos> declaraciones_funcion
+%type <atributos> sentencias
+%type <atributos> sentencia
+%type <atributos> sentencia_simple
+%type <atributos> bloque
+%type <atributos> asignacion
+%type <atributos> elemento_vector
+%type <atributos> condicional
+%type <atributos> bucle
+%type <atributos> lectura
+%type <atributos> escritura
+%type <atributos> retorno_funcion
+%type <atributos> exp
+%type <atributos> lista_expresiones
+%type <atributos> resto_lista_expresiones
+%type <atributos> comparacion
+%type <atributos> constante
+%type <atributos> constante_logica
+%type <atributos> constante_entera
+%type <atributos> identificador
 
 
 
