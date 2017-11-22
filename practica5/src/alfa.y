@@ -196,7 +196,16 @@ bloque: condicional {fprintf(output, ";R40:\t<bloque> ::= <condicional>\n");}
 	| bucle {fprintf(output, ";R41:\t<bloque> ::= <bucle>\n");}
 	;
 
-asignacion: identificador TOK_ASIGNACION exp {fprintf(output, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");}
+asignacion: identificador TOK_ASIGNACION exp {
+		if($1.tipo == $3.tipo){
+			$1.valor_entero = $3.valor_entero;
+			//TODO generar codigo de asignar
+			escribir_operando(output, char * nombre, int es_var);
+		}
+		else
+			yyerror("asignacion de tipos incompatibles");
+		fprintf(output, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");
+		}
 	| elemento_vector TOK_ASIGNACION exp {fprintf(output, ";R44:\t<asignacion> ::= <elemento_vector> = <exp>\n");}
 	;
 
@@ -223,7 +232,11 @@ exp: exp TOK_MAS exp  {fprintf(output,";R72:\t<exp> ::= <exp> + <exp>\n");}
 	| exp TOK_OR exp {fprintf(output,";R78:\t<exp> ::= <exp> || <exp>\n");}
 	| TOK_NOT exp {fprintf(output,";R79:\t<exp> ::= ! <exp>\n");}
 	| identificador {fprintf(output,";R80:\t<exp> ::= <identificador>\n");}
-	| constante {fprintf(output,";R81:\t<exp> ::= <constante>\n");}
+	| constante {
+		$$.tipo = $1.tipo;
+		$$.valor_entero = $1.valor_entero;
+		fprintf(output,";R81:\t<exp> ::= <constante>\n");
+		}
 	| TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO {fprintf(output,";R82:\t<exp> ::= ( <exp> )\n");}
 	| TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO {fprintf(output,";R83:\t<exp> ::= ( <comparacion> )\n");}
 	| elemento_vector {fprintf(output,";R85:\t<exp> ::= <elemento_vector>\n");}
@@ -247,7 +260,11 @@ comparacion: exp TOK_IGUAL exp {fprintf(output,";R93:\t<comparacion> ::= <exp> =
 	;
 
 constante: constante_logica {fprintf(output,";R99:\t<constante> ::= <constante_logica>\n");}
-	| constante_entera {fprintf(output,";R100:\t<constante> ::= <constante_entera>\n");}
+	| constante_entera {
+		$$.tipo = $1.tipo;
+		$$.valor_entero = $1.valor_entero;
+		fprintf(output,";R100:\t<constante> ::= <constante_entera>\n");
+		}
 	;
 
 constante_logica: TOK_TRUE {fprintf(output, ";R102:\t<constante_logica> ::= true\n");}
