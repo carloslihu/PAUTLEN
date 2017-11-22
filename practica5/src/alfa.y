@@ -199,9 +199,6 @@ bloque: condicional {fprintf(output, ";R40:\t<bloque> ::= <condicional>\n");}
 
 asignacion: identificador TOK_ASIGNACION exp {
 		if($1.tipo == $3.tipo){
-			$1.valor_entero = $3.valor_entero;
-			//TODO generar codigo de asignar
-			escribir_operando(output, char * nombre, int es_var);
 		}
 		else
 			yyerror("asignacion de tipos incompatibles");
@@ -237,6 +234,7 @@ exp: exp TOK_MAS exp  {fprintf(output,";R72:\t<exp> ::= <exp> + <exp>\n");}
 		$$.tipo = $1.tipo;
 		$$.valor_entero = $1.valor_entero;
 		fprintf(output,";R81:\t<exp> ::= <constante>\n");
+		escribir_operando(output, itoa($1.valor_entero), 0);
 		}
 	| TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO {fprintf(output,";R82:\t<exp> ::= ( <exp> )\n");}
 	| TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO {fprintf(output,";R83:\t<exp> ::= ( <comparacion> )\n");}
