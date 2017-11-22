@@ -1,5 +1,5 @@
-#ifndef​ GENERACION_H
-#define​ GENERACION_H
+#ifndef GENERACION_H
+#define GENERACION_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

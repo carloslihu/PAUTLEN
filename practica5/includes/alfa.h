@@ -1,7 +1,7 @@
 #ifndef _ALFA_H
 #define _ALFA_H
 
-#include "generacion_codigo.h"
+#include "generacion.h"
 
 #define MAX_LONG_ID 100
 #define MAX_TAMANIO_VECTOR 64

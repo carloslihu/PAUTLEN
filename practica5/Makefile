@@ -14,11 +14,18 @@ DEPS = $(patsubst %,$(IDIR)/%.h,$(_FILES))
 OBJ = $(patsubst %,$(ODIR)/%.o,$(_FILES))
 
 all:
-	bison -dyv alfa.y
-	lex alfa.l
-	gcc -c *.c
-	gcc -o pruebaSintactico *.o
+	bison -dyv $(SDIR)/alfa.y
+	lex $(SDIR)/alfa.l
+	mv *.c $(SDIR)
+	mv *.h $(IDIR)
+
+alfa: $(OBJ) $(ODIR)/alfa.o
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+$(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 zip:
 
+.PHONY: clean
 clean:
