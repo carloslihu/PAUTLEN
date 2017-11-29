@@ -7,7 +7,7 @@
 #ifndef TABLAHASH_H
 #define TABLAHASH_H
 
-#include "types.h"
+#include "generacion.h"
 
 /**************** CONSTANTES ****************/
 
@@ -47,6 +47,8 @@ typedef struct {
 
 /**************** FUNCIONES ****************/
 
+int printTablaSimbolos(FILE* fp, const TABLA_HASH *th);
+int printSimbolo(FILE* fp, INFO_SIMBOLO* info);
 INFO_SIMBOLO *crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param);
 void liberar_info_simbolo(INFO_SIMBOLO *is);
 NODO_HASH *crear_nodo(INFO_SIMBOLO *is);

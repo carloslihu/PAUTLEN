@@ -12,7 +12,7 @@ TablaSimbolos * ts = NULL;
 int printTablaGlobal(FILE* fp){
 	if(!ts || !ts->tablaSimbolosGlobal || !fp)
 		return 0;
-	
+	return printTablaSimbolos(fp, ts->tablaSimbolosGlobal);
 }
 
 INFO_SIMBOLO* buscar(const char* lexema){
@@ -92,7 +92,7 @@ INFO_SIMBOLO *usoLocal(const char* lexema) {
 STATUS declararFuncion(const char* lexema,  CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param) {
 	if (ts->tablaSimbolosGlobal == NULL) {
 		ts->tablaSimbolosGlobal = crear_tabla(TABLESIZE);
-		if ts->(tablaSimbolosGlobal == NULL)
+		if (ts->tablaSimbolosGlobal == NULL)
 			return ERR;
 	}
 

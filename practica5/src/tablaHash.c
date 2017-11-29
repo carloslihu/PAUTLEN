@@ -21,7 +21,7 @@
  * Salida:
  *      INFO_SIMBOLO *: puntero a la estructura reservada, NULL si se produce algún error.
  */
-INFO_SIMBOLO *crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param) {
+INFO_SIMBOLO *crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_param, int pos_param) {
     INFO_SIMBOLO *is;
 
     if ((is = (INFO_SIMBOLO *) malloc(sizeof(INFO_SIMBOLO)))) {
@@ -207,8 +207,8 @@ int printTablaSimbolos(FILE* fp, const TABLA_HASH *th){
         return ERR;
     for(i=0; i<th->tam;i++){
         if(th->tabla[i]){
-            for(index = th->tabla[i]; index->siguiente != NULL; index = index->siguiente){
-                if(printSimbolo(fp, index) == 0)
+            for(index = th->tabla[i]; index != NULL; index = index->siguiente){
+                if(printSimbolo(fp, index->info) == 0)
                     return ERR;
             }
         }
@@ -216,10 +216,14 @@ int printTablaSimbolos(FILE* fp, const TABLA_HASH *th){
     return OK;
 }
 
-int printSimbolo(FILE* fp, NODO_HASH* nodo){
-    if(!fp || !nodo)
+int printSimbolo(FILE* fp, INFO_SIMBOLO* info){
+    if(!fp || !info)
         return ERR;
-    
+    if(info->clase == VECTOR)
+        declarar_variable(fp, info->lexema,  info->tipo,  info->tam);
+    else
+        declarar_variable(fp, info->lexema,  info->tipo,  1);
+    return OK;
 }
 
 /*
