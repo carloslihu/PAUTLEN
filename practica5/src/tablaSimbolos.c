@@ -10,7 +10,7 @@ struct _TablaSimbolos{
 TablaSimbolos * ts = NULL;
 
 int printTablaGlobal(FILE* fp){
-	if(!ts || !ts->tablaSimbolosGlobal)
+	if(!ts || !ts->tablaSimbolosGlobal || !fp)
 		return 0;
 	
 }

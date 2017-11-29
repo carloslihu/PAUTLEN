@@ -37,7 +37,7 @@ INFO_SIMBOLO *crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo,
         is->n_locales = n_locales;          /*numero de variables locales*/
         is->pos_local = pos_local;          /*posicion de variable local*/
         is->n_param = n_param;            /*numero de parametros*/
-        is->pos_param = pos_param; 
+        is->pos_param = pos_param;
         /*
         is->adicional1 = adic1;
         is->adicional2 = adic2;
@@ -198,6 +198,28 @@ INFO_SIMBOLO *buscar_simbolo(const TABLA_HASH *th, const char *lexema) {
         n = n->siguiente;
     }
     return n ? n->info : NULL;
+}
+
+int printTablaSimbolos(FILE* fp, const TABLA_HASH *th){
+    int i;
+    NODO_HASH * index = NULL;
+    if(!th || !fp)
+        return ERR;
+    for(i=0; i<th->tam;i++){
+        if(th->tabla[i]){
+            for(index = th->tabla[i]; index->siguiente != NULL; index = index->siguiente){
+                if(printSimbolo(fp, index) == 0)
+                    return ERR;
+            }
+        }
+    }
+    return OK;
+}
+
+int printSimbolo(FILE* fp, NODO_HASH* nodo){
+    if(!fp || !nodo)
+        return ERR;
+    
 }
 
 /*
