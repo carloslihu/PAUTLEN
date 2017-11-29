@@ -9,6 +9,12 @@ struct _TablaSimbolos{
 
 TablaSimbolos * ts = NULL;
 
+int printTablaGlobal(FILE* fp){
+	if(!ts || !ts->tablaSimbolosGlobal)
+		return 0;
+	
+}
+
 INFO_SIMBOLO* buscar(const char* lexema){
 	if(!ts){
 		ts = (TablaSimbolos*)calloc(1, sizeof(TablaSimbolos));
