@@ -21,7 +21,7 @@
  * Salida:
  *      INFO_SIMBOLO *: puntero a la estructura reservada, NULL si se produce algún error.
  */
-INFO_SIMBOLO *crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int adic1, int adic2) {
+INFO_SIMBOLO *crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param) {
     INFO_SIMBOLO *is;
 
     if ((is = (INFO_SIMBOLO *) malloc(sizeof(INFO_SIMBOLO)))) {
@@ -33,8 +33,15 @@ INFO_SIMBOLO *crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo,
         is->categoria = categ;
         is->tipo = tipo;
         is->clase = clase;
+        is->tam = tam;                /*numero de elementos de un vector*/
+        is->n_locales = n_locales;          /*numero de variables locales*/
+        is->pos_local = pos_local;          /*posicion de variable local*/
+        is->n_param = n_param;            /*numero de parametros*/
+        is->pos_param = pos_param; 
+        /*
         is->adicional1 = adic1;
         is->adicional2 = adic2;
+        */
     }
     return is;
 }

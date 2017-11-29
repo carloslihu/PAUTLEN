@@ -11,6 +11,9 @@
 	extern int col;
 	extern int yyleng;
 
+	int tipo_actual;
+	int clase_actual;
+
 	int yyerror(char* s){
 		if(yylval.atributos.tipo != -1)
 			fprintf(stderr, "****Error sintactico en [lin %d col %d]\n", fil, col-yyleng);
@@ -119,6 +122,7 @@ programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLA
 
 declaraciones: declaracion {
 		fprintf(output, ";R2:\t<declaraciones> ::= <declaracion>\n");
+		//TODO cuando hagamos funciones, comprobar que es una declaracion en una funcion
 		escribir_segmento_codigo(output);
 		}
 	| declaracion declaraciones {fprintf(output, ";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\n");}
@@ -131,20 +135,27 @@ declaracion: clase identificadores TOK_PUNTOYCOMA {
 	}
 
 clase: clase_escalar {
+		clase_actual = ESCALAR;
 		$$.tipo = $1.tipo;
 		fprintf(output, ";R5:\t<clase> ::= <clase_escalar>\n");
 		}
-	| clase_vector {fprintf(output, ";R7:\t<clase> ::= <clase_vector>\n");}
+	| clase_vector {
+		clase_actual = VECTOR;
+		//TODO $$.tipo = $1.tipo; ??
+		fprintf(output, ";R7:\t<clase> ::= <clase_vector>\n");
+		}
 	;
 
 clase_escalar: tipo {fprintf(output, ";R9:\t<clase_escalar> ::= <tipo>\n");}
 
 tipo: TOK_INT {
 		$$.tipo = ENTERO;
+		tipo_actual = ENTERO;
 		fprintf(output, ";R10:\t<tipo> ::= int\n");
 		}
 	| TOK_BOOLEAN {
 		$$.tipo = BOOLEANO;
+		tipo_actual = BOOLEANO;
 		fprintf(output, ";R11:\t<tipo> ::= boolean\n");
 		}
 	;
@@ -204,7 +215,9 @@ bloque: condicional {fprintf(output, ";R40:\t<bloque> ::= <condicional>\n");}
 	;
 
 asignacion: identificador TOK_ASIGNACION exp {
-		if($1.tipo == $3.tipo){
+	//TODO cuando hagamos asignaciones en funciones, revisar el contexto de la asignacion
+		if(usoGlobal($1.lexema) ||$1.tipo == $3.tipo){
+
 		}
 		else
 			yyerror("asignacion de tipos incompatibles");
