@@ -4,7 +4,7 @@
 TABLA_HASH * tablaSimbolosGlobal = NULL;
 TABLA_HASH * tablaSimbolosLocal = NULL;
 
-STATUS declararGlobal(const char* lexema,  CATEGORIA categ, TIPO tipo, CLASE clase, int adic1, int adic2) {
+STATUS declararGlobal(const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param) {
 	if (tablaSimbolosGlobal == NULL)
 		tablaSimbolosGlobal = crear_tabla(TABLESIZE);
 	if (tablaSimbolosGlobal)
