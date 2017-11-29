@@ -216,7 +216,7 @@ INFO_SIMBOLO *buscar_simbolo(const TABLA_HASH *th, const char *lexema) {
  * Salida:
  *      STATUS: OK si se inserta correctamente, ERR si no (por ya existir o por memoria insuficiente).
  */
-STATUS insertar_simbolo(TABLA_HASH *th, const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int adic1, int adic2) {
+STATUS insertar_simbolo(TABLA_HASH *th, const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param) {
     int ind;
     INFO_SIMBOLO *is;
     NODO_HASH *n = NULL;
@@ -228,7 +228,7 @@ STATUS insertar_simbolo(TABLA_HASH *th, const char *lexema, CATEGORIA categ, TIP
     /* Calcular posición */
     ind = hash(lexema) % th->tam;
     /* Reservar nodo e info del nodo */
-    if (!(is = crear_info_simbolo(lexema, categ, tipo, clase, adic1, adic2))) {
+    if (!(is = crear_info_simbolo(lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param))) {
         return ERR;
     }
     if (!(n = crear_nodo(is))) {

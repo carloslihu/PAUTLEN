@@ -23,11 +23,11 @@ typedef struct {
     CATEGORIA categoria;    /* categoría */
     TIPO tipo;              /* tipo */
     CLASE clase;            /* clase */
-    int tam;
-    int n_locales;
-    int pos_local;
-    int n_param;
-    int pos_param;
+    int tam;                /*numero de elementos de un vector*/
+    int n_locales;          /*numero de variables locales*/
+    int pos_local;          /*posicion de variable local*/
+    int n_param;            /*numero de parametros*/
+    int pos_param;          /*posicion del parametro*/
     /*int adicional1;     valor si escalar, longitud si vector, número de parámetros si función */
     /*int adicional2;     posición en llamada a función si parámetro, posición de declaración si variable local de función, número de variables locales si función */
 } INFO_SIMBOLO;
@@ -47,7 +47,7 @@ typedef struct {
 
 /**************** FUNCIONES ****************/
 
-INFO_SIMBOLO *crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int adic1, int adic2);
+INFO_SIMBOLO *crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param);
 void liberar_info_simbolo(INFO_SIMBOLO *is);
 NODO_HASH *crear_nodo(INFO_SIMBOLO *is);
 void liberar_nodo(NODO_HASH *nh);
@@ -55,7 +55,7 @@ TABLA_HASH *crear_tabla(int tam);
 void liberar_tabla(TABLA_HASH *th);
 unsigned long hash(const char *str);
 INFO_SIMBOLO *buscar_simbolo(const TABLA_HASH *th, const char *lexema);
-STATUS insertar_simbolo(TABLA_HASH *th, const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int adic1, int adic2);
+STATUS insertar_simbolo(TABLA_HASH *th, const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param);
 void borrar_simbolo(TABLA_HASH *th, const char *lexema);
 
 #endif  /* TABLAHASH_H */
