@@ -118,30 +118,34 @@
 
 %%
 
-programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA {fprintf(output, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");}
+programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones escritura1 funciones escritura2 sentencias TOK_LLAVEDERECHA {fprintf(output, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");}
+
+escritura1: {
+	escribir_subseccion_data(output);
+	//TODO print tabla de simbolos en la seccion data
+	escribir_segmento_codigo(output);
+}
+
+escritura2: {
+	escribir_inicio_main(output);
+}
 
 declaraciones: declaracion {
 		fprintf(output, ";R2:\t<declaraciones> ::= <declaracion>\n");
-		//TODO cuando hagamos funciones, comprobar que es una declaracion en una funcion
-		escribir_segmento_codigo(output);
 		}
 	| declaracion declaraciones {fprintf(output, ";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\n");}
 	;
 
 declaracion: clase identificadores TOK_PUNTOYCOMA {
-		//TODO generar codigo de declarar variables
-		$2.tipo = $1.tipo;
 		fprintf(output, ";R4:\t<declaracion> ::= <clase> <identificadores> ;\n");
 	}
 
 clase: clase_escalar {
 		clase_actual = ESCALAR;
-		$$.tipo = $1.tipo;
 		fprintf(output, ";R5:\t<clase> ::= <clase_escalar>\n");
 		}
 	| clase_vector {
 		clase_actual = VECTOR;
-		//TODO $$.tipo = $1.tipo; ??
 		fprintf(output, ";R7:\t<clase> ::= <clase_vector>\n");
 		}
 	;
@@ -149,12 +153,10 @@ clase: clase_escalar {
 clase_escalar: tipo {fprintf(output, ";R9:\t<clase_escalar> ::= <tipo>\n");}
 
 tipo: TOK_INT {
-		$$.tipo = ENTERO;
 		tipo_actual = ENTERO;
 		fprintf(output, ";R10:\t<tipo> ::= int\n");
 		}
 	| TOK_BOOLEAN {
-		$$.tipo = BOOLEANO;
 		tipo_actual = BOOLEANO;
 		fprintf(output, ";R11:\t<tipo> ::= boolean\n");
 		}
@@ -163,19 +165,12 @@ tipo: TOK_INT {
 clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO {fprintf(output, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");}
 
 identificadores: identificador {
-		$1.tipo = $$.tipo;
 		fprintf(output, ";R18:\t<identificadores> ::= <identificador>\n");
-		//TODO generar codigo de declarar variables
-		//TODO arreglar fixme
-		if(declararGlobal($1.lexema,  VARIABLE, ENTERO, ESCALAR, 0, 0))
-			declarar_variable(output,$1.lexema, $1.tipo, 1);//FIXME el ultimo 1 de esta llamada debe ser el tamaño de la variable del identificador
-		}
 	| identificador TOK_COMA identificadores {fprintf(output, ";R19:\t<identificadores> ::= <identificador> , <identificadores>\n");}
 	;
 
 funciones: funcion funciones {fprintf(output, ";R:20\t<funciones> ::= <funcion> <funciones>\n");}
 	| {
-		escribir_inicio_main(output);
 		fprintf(output, ";R21:\t<funciones> ::= \n");
 		}
 	;
@@ -215,12 +210,6 @@ bloque: condicional {fprintf(output, ";R40:\t<bloque> ::= <condicional>\n");}
 	;
 
 asignacion: identificador TOK_ASIGNACION exp {
-	//TODO cuando hagamos asignaciones en funciones, revisar el contexto de la asignacion
-		if(usoGlobal($1.lexema) ||$1.tipo == $3.tipo){
-
-		}
-		else
-			yyerror("asignacion de tipos incompatibles");
 		fprintf(output, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");
 		}
 	| elemento_vector TOK_ASIGNACION exp {fprintf(output, ";R44:\t<asignacion> ::= <elemento_vector> = <exp>\n");}
@@ -250,12 +239,7 @@ exp: exp TOK_MAS exp  {fprintf(output,";R72:\t<exp> ::= <exp> + <exp>\n");}
 	| TOK_NOT exp {fprintf(output,";R79:\t<exp> ::= ! <exp>\n");}
 	| identificador {fprintf(output,";R80:\t<exp> ::= <identificador>\n");}
 	| constante {
-		char aux[32];//README 32 ??
-		$$.tipo = $1.tipo;
-		$$.valor_entero = $1.valor_entero;
 		fprintf(output,";R81:\t<exp> ::= <constante>\n");
-		sprintf(aux, "%d", $1.valor_entero);
-		escribir_operando(output, aux, 0);
 		}
 	| TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO {fprintf(output,";R82:\t<exp> ::= ( <exp> )\n");}
 	| TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO {fprintf(output,";R83:\t<exp> ::= ( <comparacion> )\n");}
@@ -281,8 +265,6 @@ comparacion: exp TOK_IGUAL exp {fprintf(output,";R93:\t<comparacion> ::= <exp> =
 
 constante: constante_logica {fprintf(output,";R99:\t<constante> ::= <constante_logica>\n");}
 	| constante_entera {
-		$$.tipo = $1.tipo;
-		$$.valor_entero = $1.valor_entero;
 		fprintf(output,";R100:\t<constante> ::= <constante_entera>\n");
 		}
 	;
@@ -292,13 +274,10 @@ constante_logica: TOK_TRUE {fprintf(output, ";R102:\t<constante_logica> ::= true
 	;
 
 constante_entera: TOK_CONSTANTE_ENTERA {
-		$$.tipo = ENTERO;
-		$$.valor_entero = $1.valor_entero;
 		fprintf(output,";R104:\t<constante_entera> ::= TOK_CONSTANTE_ENTERA\n");
 	}
 
 identificador: TOK_IDENTIFICADOR {
-		strcpy($$.lexema, $1.lexema);
 		fprintf(output, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");
 		}
 

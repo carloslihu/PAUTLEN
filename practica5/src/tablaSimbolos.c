@@ -1,42 +1,82 @@
 #include "../includes/tablaSimbolos.h"
 #define TABLESIZE 256
 
-TABLA_HASH * tablaSimbolosGlobal = NULL;
-TABLA_HASH * tablaSimbolosLocal = NULL;
+struct _TablaSimbolos{
+	TABLA_HASH * tablaSimbolosGlobal;
+	TABLA_HASH * tablaSimbolosLocal;
+	AMBITO ambito;
+};
+
+TablaSimbolos * ts = NULL;
+
+INFO_SIMBOLO* buscar(const char* lexema){
+	if(!ts){
+		ts = (TablaSimbolos*)calloc(1, sizeof(TablaSimbolos));
+		ts->tablaSimbolosGlobal = NULL;
+		ts->tablaSimbolosLocal = NULL;
+		ts->ambito = GLOBAL;
+	}
+	if(ts->ambito == GLOBAL){
+		return usoGlobal(lexema);
+	} else {
+		return usoLocal(lexema);
+	}
+}
+
+STATUS insertar(const char* lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param){
+	if(!ts){
+		ts = (TablaSimbolos*)calloc(1, sizeof(TablaSimbolos));
+		ts->tablaSimbolosGlobal = NULL;
+		ts->tablaSimbolosLocal = NULL;
+		ts->ambito = GLOBAL;
+	}
+	if(categ == FUNCION){
+		return declararFuncion(lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param);
+	} else if(categ == PARAMETRO){
+		return declararLocal(lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param);
+	} else {
+		if(ts->ambito == GLOBAL){
+			return declararGlobal(lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param);
+		} else {
+			return declararLocal(lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param);
+		}
+	}
+}
+
 
 STATUS declararGlobal(const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param) {
-	if (tablaSimbolosGlobal == NULL)
-		tablaSimbolosGlobal = crear_tabla(TABLESIZE);
-	if (tablaSimbolosGlobal)
-		return insertar_simbolo(tablaSimbolosGlobal, lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param);
+	if (ts->tablaSimbolosGlobal == NULL)
+		ts->tablaSimbolosGlobal = crear_tabla(TABLESIZE);
+	if (ts->tablaSimbolosGlobal)
+		return insertar_simbolo(ts->tablaSimbolosGlobal, lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param);
 	else
 		return ERR;
 }
 
 
 STATUS declararLocal(const char* lexema,  CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param) {
-	if (tablaSimbolosLocal)
-		return insertar_simbolo(tablaSimbolosLocal, lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param);
+	if (ts->tablaSimbolosLocal)
+		return insertar_simbolo(ts->tablaSimbolosLocal, lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param);
 	else
 		return ERR;
 }// 4, 5, 6, 7, 8
 
 
 INFO_SIMBOLO *usoGlobal(const char* lexema) {
-	if (tablaSimbolosGlobal)
-		return buscar_simbolo(tablaSimbolosGlobal, lexema);
+	if (ts->tablaSimbolosGlobal)
+		return buscar_simbolo(ts->tablaSimbolosGlobal, lexema);
 	else
 		return NULL;
 }
 
 
 INFO_SIMBOLO *usoLocal(const char* lexema) {
-	if (tablaSimbolosLocal && tablaSimbolosGlobal) {
-		INFO_SIMBOLO * aux = buscar_simbolo(tablaSimbolosLocal, lexema);
+	if (ts->tablaSimbolosLocal && ts->tablaSimbolosGlobal) {
+		INFO_SIMBOLO * aux = buscar_simbolo(ts->tablaSimbolosLocal, lexema);
 		if (aux)
 			return aux;
 		else
-			return buscar_simbolo(tablaSimbolosGlobal, lexema);
+			return buscar_simbolo(ts->tablaSimbolosGlobal, lexema);
 	}
 	else
 		return NULL;
@@ -44,34 +84,34 @@ INFO_SIMBOLO *usoLocal(const char* lexema) {
 
 
 STATUS declararFuncion(const char* lexema,  CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param) {
-	if (tablaSimbolosGlobal == NULL) {
-		tablaSimbolosGlobal = crear_tabla(TABLESIZE);
-		if (tablaSimbolosGlobal == NULL)
+	if (ts->tablaSimbolosGlobal == NULL) {
+		ts->tablaSimbolosGlobal = crear_tabla(TABLESIZE);
+		if ts->(tablaSimbolosGlobal == NULL)
 			return ERR;
 	}
 
-	liberar_tabla(tablaSimbolosLocal);
-	tablaSimbolosLocal = crear_tabla(TABLESIZE);
+	liberar_tabla(ts->tablaSimbolosLocal);
+	ts->tablaSimbolosLocal = crear_tabla(TABLESIZE);
 
-	if (tablaSimbolosLocal) {
-		if (insertar_simbolo(tablaSimbolosGlobal, lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param) == ERR) {
-			liberar_tabla(tablaSimbolosLocal);
-			tablaSimbolosLocal = NULL;
+	if (ts->tablaSimbolosLocal) {
+		if (insertar_simbolo(ts->tablaSimbolosGlobal, lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param) == ERR) {
+			liberar_tabla(ts->tablaSimbolosLocal);
+			ts->tablaSimbolosLocal = NULL;
 			return ERR;
 		}
-		return insertar_simbolo(tablaSimbolosLocal, lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param);
+		return insertar_simbolo(ts->tablaSimbolosLocal, lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param);
 	} else {
 		return ERR;
 	}
 }
 
 void cerrarFuncion() {
-	liberar_tabla(tablaSimbolosLocal);
-	tablaSimbolosLocal = NULL;
+	liberar_tabla(ts->tablaSimbolosLocal);
+	ts->tablaSimbolosLocal = NULL;
 }
 
 void limpiarTablas() {
 	cerrarFuncion();
-	liberar_tabla(tablaSimbolosGlobal);
-	tablaSimbolosGlobal = NULL;
+	liberar_tabla(ts->tablaSimbolosGlobal);
+	ts->tablaSimbolosGlobal = NULL;
 }
