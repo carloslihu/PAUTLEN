@@ -20,6 +20,12 @@ all:
 alfa: $(OBJ) $(ODIR)/main.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
+asm:
+	./alfa prg1.alf prg1.asm
+	nasm -felf32 prg1.asm
+	mv prg1.o obj/prg1.o
+	gcc -m32 -o prg1 obj/prg1.o obj/alfalib.o
+
 $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 

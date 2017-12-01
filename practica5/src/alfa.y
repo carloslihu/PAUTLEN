@@ -1,4 +1,5 @@
 %{
+#define ERROR_SEMANTICO "error semantico\n"
 #include <stdio.h>
 	/*#include "tokens.h"*/
 #include "../includes/alfa.h"
@@ -127,8 +128,10 @@ programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones escritura1 funciones escritu
 
 escritura1: {
 	escribir_subseccion_data(output);
+	escribir_cabecera_bss(output);
 	printTablaGlobal(output);
 	escribir_segmento_codigo(output);
+	fprintf(output, ";Rescritura1:\t <escritura1> ::= \n");
 }
 
 escritura2: {
@@ -216,6 +219,17 @@ bloque: condicional {fprintf(output, ";R40:\t<bloque> ::= <condicional>\n");}
 	;
 
 asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
+		INFO_SIMBOLO* info = buscar($1.lexema);
+		if(info == NULL){
+			yyerror(ERROR_SEMANTICO);
+		} else if(info->categoria == FUNCION){
+			yyerror("error semantico: asignacion a funcion");
+		} else if(info->clase == VECTOR){
+			yyerror("error semantico: asignacion de clases incompatibles");
+		} else if(info->tipo != $3.tipo){
+			yyerror("error semantico: asignacion de tipos incompatibles");
+		}
+		asignar(output, $1.lexema, $3.es_direccion);
 		fprintf(output, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");
 	}
 
@@ -229,7 +243,10 @@ bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQU
 
 lectura: TOK_SCANF identificador {fprintf(output, ";R54:\t<lectura> ::= scanf <identificador>\n");}
 
-escritura: TOK_PRINTF exp {fprintf(output, ";R56:\t<escritura> ::= printf <exp>\n");}
+escritura: TOK_PRINTF exp {
+	escribir(output, $2.es_direccion, $2.tipo);
+	fprintf(output, ";R56:\t<escritura> ::= printf <exp>\n");
+	}
 
 retorno_funcion: TOK_RETURN exp {fprintf(output, ";R61:\t<retorno_funcion> ::= return <exp>\n");}
 
@@ -241,13 +258,41 @@ exp: exp TOK_MAS exp  {fprintf(output, ";R72:\t<exp> ::= <exp> + <exp>\n");}
 	| exp TOK_AND exp {fprintf(output, ";R77:\t<exp> ::= <exp> && <exp>\n");}
 	| exp TOK_OR exp {fprintf(output, ";R78:\t<exp> ::= <exp> || <exp>\n");}
 	| TOK_NOT exp {fprintf(output, ";R79:\t<exp> ::= ! <exp>\n");}
-	| TOK_IDENTIFICADOR {fprintf(output, ";R80:\t<exp> ::= <identificador>\n");}
+	| TOK_IDENTIFICADOR {
+		INFO_SIMBOLO* info = buscar($1.lexema);
+		if(info == NULL){
+			yyerror("error semantico: identificador sin declarar");
+		}
+		else if(info->categoria == FUNCION){
+			yyerror("error semantico: el identificador es una funcion");
+		} else if(info->clase == VECTOR){
+			yyerror("error semantico: el identificador es un vector");
+		}
+		$$.tipo = info->tipo;
+		$$.es_direccion = TRUE;
+		escribir_operando(output, $1.lexema, TRUE);
+		fprintf(output, ";R80:\t<exp> ::= <identificador>\n");
+		}
 	| constante {
+		$$.tipo = $1.tipo;
+		$$.es_direccion = $1.es_direccion;
 		fprintf(output, ";R81:\t<exp> ::= <constante>\n");
 	}
-	| TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO {fprintf(output, ";R82:\t<exp> ::= ( <exp> )\n");}
-	| TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO {fprintf(output, ";R83:\t<exp> ::= ( <comparacion> )\n");}
-	| elemento_vector {fprintf(output, ";R85:\t<exp> ::= <elemento_vector>\n");}
+	| TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO {
+		$$.tipo = $2.tipo;
+		$$.es_direccion = $2.es_direccion;
+		fprintf(output, ";R82:\t<exp> ::= ( <exp> )\n");
+		}
+	| TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO {
+		$$.tipo = $2.tipo;
+		$$.es_direccion = $2.es_direccion;
+		fprintf(output, ";R83:\t<exp> ::= ( <comparacion> )\n");
+		}
+	| elemento_vector {
+		$$.tipo = $1.tipo;
+		$$.es_direccion = $1.es_direccion;
+		fprintf(output, ";R85:\t<exp> ::= <elemento_vector>\n");
+		}
 	| identificador TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {fprintf(output, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}
 	;
 
@@ -267,17 +312,35 @@ comparacion: exp TOK_IGUAL exp {fprintf(output, ";R93:\t<comparacion> ::= <exp> 
 	| exp TOK_MAYOR exp {fprintf(output, ";R98:\t<comparacion> ::= <exp> > <exp>\n");}
 	;
 
-constante: constante_logica {fprintf(output, ";R99:\t<constante> ::= <constante_logica>\n");}
+constante: constante_logica {
+		$$.tipo = $1.tipo;
+		$$.es_direccion = $1.es_direccion;
+		fprintf(output, ";R99:\t<constante> ::= <constante_logica>\n");
+		}
 	| constante_entera {
+		$$.tipo = $1.tipo;
+		$$.es_direccion = $1.es_direccion;
 		fprintf(output, ";R100:\t<constante> ::= <constante_entera>\n");
 	}
 	;
 
-constante_logica: TOK_TRUE {fprintf(output, ";R102:\t<constante_logica> ::= true\n");}
-	| TOK_FALSE {fprintf(output, ";R103:\t<constante_logica> ::= false\n");}
+constante_logica: TOK_TRUE {
+		$$.tipo = BOOLEANO;
+		$$.es_direccion = FALSE;
+		fprintf(output, ";R102:\t<constante_logica> ::= true\n");
+		}
+	| TOK_FALSE {
+		$$.tipo = BOOLEANO;
+		$$.es_direccion = FALSE;	
+		fprintf(output, ";R103:\t<constante_logica> ::= false\n");
+		}
 	;
 
 constante_entera: TOK_CONSTANTE_ENTERA {
+		$$.tipo = ENTERO;
+		$$.es_direccion = FALSE;
+		$$.valor_entero = $1.valor_entero;
+		escribir_operando(output, $1.lexema, 0);//README $1.lexema es un truco sucio para no jugar con memoria
 		fprintf(output, ";R104:\t<constante_entera> ::= TOK_CONSTANTE_ENTERA\n");
 	}
 

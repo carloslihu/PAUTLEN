@@ -66,6 +66,7 @@ false {col+=yyleng;
 [0-9]+ {col+=yyleng;
 	yylval.atributos.tipo = ENTERO;
 	yylval.atributos.valor_entero = atoi(yytext);
+	strcpy(yylval.atributos.lexema , yytext);
 	fprintf(output, ";D:\t%s\n",yytext); 
 	return TOK_CONSTANTE_ENTERA;}
 
