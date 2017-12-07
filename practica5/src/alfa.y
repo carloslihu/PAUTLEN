@@ -15,6 +15,8 @@
 
 	int tipo_actual;
 	int clase_actual;
+	int cuantos_no = 0;
+	int cuantos_if = 0;
 
 	int yyerror(char* s) {
 		fprintf(stderr,"%s",s);
@@ -221,13 +223,13 @@ bloque: condicional {fprintf(output, ";R40:\t<bloque> ::= <condicional>\n");}
 asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
-			yyerror(ERROR_SEMANTICO);
+			return yyerror(ERROR_SEMANTICO);
 		} else if(info->categoria == FUNCION){
-			yyerror("error semantico: asignacion a funcion");
+			return yyerror("error semantico: asignacion a funcion");
 		} else if(info->clase == VECTOR){
-			yyerror("error semantico: asignacion de clases incompatibles");
+			return yyerror("error semantico: asignacion de clases incompatibles");
 		} else if(info->tipo != $3.tipo){
-			yyerror("error semantico: asignacion de tipos incompatibles");
+			return yyerror("error semantico: asignacion de tipos incompatibles");
 		}
 		asignar(output, $1.lexema, $3.es_direccion);
 		fprintf(output, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");
@@ -250,23 +252,77 @@ escritura: TOK_PRINTF exp {
 
 retorno_funcion: TOK_RETURN exp {fprintf(output, ";R61:\t<retorno_funcion> ::= return <exp>\n");}
 
-exp: exp TOK_MAS exp  {fprintf(output, ";R72:\t<exp> ::= <exp> + <exp>\n");}
-	| exp TOK_MENOS exp {fprintf(output, ";R73:\t<exp> ::= <exp> - <exp>\n");}
-	| exp TOK_DIVISION exp {fprintf(output, ";R74:\t<exp> ::= <exp> / <exp>\n");}
-	| exp TOK_ASTERISCO exp {fprintf(output, ";R75:\t<exp> ::= <exp> * <exp>\n");}
-	| TOK_MENOS exp %prec MENOSU {fprintf(output, ";R76:\t<exp> ::= - <exp>\n");}
-	| exp TOK_AND exp {fprintf(output, ";R77:\t<exp> ::= <exp> && <exp>\n");}
-	| exp TOK_OR exp {fprintf(output, ";R78:\t<exp> ::= <exp> || <exp>\n");}
-	| TOK_NOT exp {fprintf(output, ";R79:\t<exp> ::= ! <exp>\n");}
+exp: exp TOK_MAS exp  {
+		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
+			return yyerror("error semantico: suma de tipos incompatibles");
+		}
+		sumar(output, $1.es_direccion, $3.es_direccion);
+		$$.es_direccion = FALSE;
+		fprintf(output, ";R72:\t<exp> ::= <exp> + <exp>\n");
+		}
+	| exp TOK_MENOS exp {
+		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
+			return yyerror("error semantico: resta de tipos incompatibles");
+		}
+		restar(output, $1.es_direccion, $3.es_direccion);
+		$$.es_direccion = FALSE;
+		fprintf(output, ";R73:\t<exp> ::= <exp> - <exp>\n");}
+	| exp TOK_DIVISION exp {
+		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
+			return yyerror("error semantico: division de tipos incompatibles");
+		}
+		dividir(output, $1.es_direccion, $3.es_direccion);
+		$$.es_direccion = FALSE;
+		fprintf(output, ";R74:\t<exp> ::= <exp> / <exp>\n");}
+	| exp TOK_ASTERISCO exp {
+		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
+			return yyerror("error semantico: multiplicacion de tipos incompatibles");
+		}
+		multiplicar(output, $1.es_direccion, $3.es_direccion);
+		$$.es_direccion = FALSE;
+		fprintf(output, ";R75:\t<exp> ::= <exp> * <exp>\n");}
+	| TOK_MENOS exp %prec MENOSU {
+		if($2.tipo != ENTERO){
+			return yyerror("error semantico: cambio de signo de tipo incompatible");
+		}
+		cambiar_signo(output, $2.es_direccion);
+		$$.es_direccion = FALSE;
+		fprintf(output, ";R76:\t<exp> ::= - <exp>\n");
+		}
+	| exp TOK_AND exp {
+		if($1.tipo != $3.tipo || $1.tipo != BOOLEANO){
+			return yyerror("error semantico: multiplicacion de tipos incompatibles");
+		}
+		y(output, $1.es_direccion, $3.es_direccion);
+		$$.es_direccion = FALSE;
+		fprintf(output, ";R77:\t<exp> ::= <exp> && <exp>\n");
+		}//TODO
+	| exp TOK_OR exp {
+		if($1.tipo != $3.tipo || $1.tipo != BOOLEANO){
+			return yyerror("error semantico: multiplicacion de tipos incompatibles");
+		}
+		o(output, $1.es_direccion, $3.es_direccion);
+		$$.es_direccion = FALSE;
+		fprintf(output, ";R78:\t<exp> ::= <exp> || <exp>\n");
+		}//TODO
+	| TOK_NOT exp {
+		if($2.tipo != BOOLEANO){
+			return yyerror("error semantico: negacion de tipos incompatibles");
+		}
+		no(output, $2.es_direccion, cuantos_no);
+		cuantos_no++;
+		$$.es_direccion = FALSE;
+		fprintf(output, ";R79:\t<exp> ::= ! <exp>\n");
+		}//TODO
 	| TOK_IDENTIFICADOR {
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
-			yyerror("error semantico: identificador sin declarar");
+			return yyerror("error semantico: identificador sin declarar");
 		}
 		else if(info->categoria == FUNCION){
-			yyerror("error semantico: el identificador es una funcion");
+			return yyerror("error semantico: el identificador es una funcion");
 		} else if(info->clase == VECTOR){
-			yyerror("error semantico: el identificador es un vector");
+			return yyerror("error semantico: el identificador es un vector");
 		}
 		$$.tipo = info->tipo;
 		$$.es_direccion = TRUE;
@@ -293,7 +349,7 @@ exp: exp TOK_MAS exp  {fprintf(output, ";R72:\t<exp> ::= <exp> + <exp>\n");}
 		$$.es_direccion = $1.es_direccion;
 		fprintf(output, ";R85:\t<exp> ::= <elemento_vector>\n");
 		}
-	| identificador TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {fprintf(output, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}
+	| identificador TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {fprintf(output, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}//TODO
 	;
 
 lista_expresiones: exp resto_lista_expresiones {fprintf(output, ";R89:\t<lista_expresiones> ::= <exp> <resto_lista_expresiones>\n");}
@@ -347,11 +403,11 @@ constante_entera: TOK_CONSTANTE_ENTERA {
 identificador: TOK_IDENTIFICADOR {
 		fprintf(output, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");
 		if (buscar($1.lexema)){
-			yyerror("ya existe ese identificador!!");
+			return yyerror("ya existe ese identificador!!");
 		}
 		else{
 			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, 1, 1, 1, 1, 1) == ERR)
-				yyerror("acho que no inserta!\n");
+				return yyerror("acho que no inserta!\n");
 		}
 	}
 

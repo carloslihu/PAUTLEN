@@ -292,8 +292,8 @@ void restar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
-	fprintf(fpasm, "\tsub edx, eax\n");
-	fprintf(fpasm, "\tpush dword edx\n");
+	fprintf(fpasm, "\tsub eax, edx\n");
+	fprintf(fpasm, "\tpush dword eax\n");
 }
 
 void multiplicar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
@@ -338,10 +338,10 @@ void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 
 	/* G16 */
 
-	fprintf(fpasm, "\tpop dword eax\n");
 	fprintf(fpasm, "\tpop dword ebx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
 
-	if (es_referencia_2)
+	if (es_referencia_1)
 		fprintf(fpasm, "\tmov eax, [eax]\n");
 
 	/* b.4.19 cbw , cwd , cdq , cwde : sign extensions */
@@ -352,7 +352,7 @@ void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	/* aqui habria que comprobar que ebx o [ebx] no es 0 y saltar
 	   donde corresponda si lo es */
 
-	if (es_referencia_1) {
+	if (es_referencia_2) {
 		fprintf(fpasm, "\tcmp dword [ebx], 0\n");
 		fprintf(fpasm, "\tje gestion_error_div_cero\n");
 		fprintf(fpasm, "\tidiv dword [ebx]\n");
