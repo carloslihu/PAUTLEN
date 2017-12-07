@@ -1,5 +1,4 @@
 %{
-	/*#include "tokens.h"*/
 	#include "../includes/alfa.h"
 	#include "../includes/y.tab.h"
 	int fil=1;

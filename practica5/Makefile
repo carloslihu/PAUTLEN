@@ -16,6 +16,7 @@ all:
 	lex $(SDIR)/alfa.l
 	mv *.c $(SDIR)
 	mv *.h $(IDIR)
+	$(MAKE) alfa
 
 alfa: $(OBJ) $(ODIR)/main.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
@@ -23,8 +24,8 @@ alfa: $(OBJ) $(ODIR)/main.o
 asm:
 	./alfa prg1.alf prg1.asm
 	nasm -felf32 prg1.asm
-	mv prg1.o obj/prg1.o
-	gcc -m32 -o prg1 obj/prg1.o obj/alfalib.o
+	mv prg1.o $(ODIR)/prg1.o
+	gcc -m32 -o prg1 $(ODIR)/prg1.o $(ODIR)/alfalib.o
 
 $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -35,6 +36,6 @@ zip:
 .PHONY: clean
 
 clean:
-	-rm $(ODIR)/*.o $(IDIR)/y.tab.h 
-	-rm $(SDIR)/alfa.c $(SDIR)/lex.yy.c $(SDIR)/y.tab.c
-	-rm y.output
+	-rm $(OBJ) $(IDIR)/y.tab.h 
+	-rm $(SDIR)/alfa.c $(SDIR)/lex.yy.c $(SDIR)/y.tab.c $(ODIR)/prg1.o $(ODIR)/main.o
+	-rm y.output alfa prg1 prg1.asm
