@@ -15,8 +15,9 @@
 
 	int tipo_actual;
 	int clase_actual;
-	int cuantos_no = 0;
-	int cuantos_if = 0;
+	int tam_actual;//README esta variable global la uso para poder heredar el tamanio del vector en las declaraciones
+	int cuantos = 0;
+	int cuantos_bloque = 0;
 
 	int yyerror(char* s) {
 		fprintf(stderr,"%s",s);
@@ -122,142 +123,351 @@
 
 
 %%
-
+/*
+	REGLA 1
+*/
 programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones escritura1 funciones escritura2 sentencias TOK_LLAVEDERECHA {
-	escribir_fin(output);
-	fprintf(output, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");
-}
+		escribir_fin(output);
+		fprintf(output, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");
+	}
 
+
+
+
+/*
+	REGLA (escritura) 1
+*/
 escritura1: {
-	escribir_subseccion_data(output);
-	escribir_cabecera_bss(output);
-	printTablaGlobal(output);
-	escribir_segmento_codigo(output);
-	fprintf(output, ";Rescritura1:\t <escritura1> ::= \n");
-}
+		escribir_subseccion_data(output);
+		escribir_cabecera_bss(output);
+		printTablaGlobal(output);
+		escribir_segmento_codigo(output);
+		fprintf(output, ";Rescritura1:\t <escritura1> ::= \n");
+	}
 
+
+
+
+/*
+	REGLA (escritura) 2
+*/
 escritura2: {
-	escribir_inicio_main(output);
-}
+		escribir_inicio_main(output);
+	}
 
+
+
+
+/*
+	REGLAS 2 4
+*/
 declaraciones: declaracion {
-	fprintf(output, ";R2:\t<declaraciones> ::= <declaracion>\n");
-}
-| declaracion declaraciones {fprintf(output, ";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\n");}
-;
+		fprintf(output, ";R2:\t<declaraciones> ::= <declaracion>\n");
+	}
+	| declaracion declaraciones {fprintf(output, ";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\n");}
+	;
 
 declaracion: clase identificadores TOK_PUNTOYCOMA {
-	fprintf(output, ";R4:\t<declaracion> ::= <clase> <identificadores> ;\n");
-}
+		fprintf(output, ";R4:\t<declaracion> ::= <clase> <identificadores> ;\n");
+	}
 
+
+
+
+/*
+	REGLAS 5 7
+*/
 clase: clase_escalar {
-	clase_actual = ESCALAR;
-	fprintf(output, ";R5:\t<clase> ::= <clase_escalar>\n");
-}
-| clase_vector {
-	clase_actual = VECTOR;
-	fprintf(output, ";R7:\t<clase> ::= <clase_vector>\n");
-}
-;
+		clase_actual = ESCALAR;
+		fprintf(output, ";R5:\t<clase> ::= <clase_escalar>\n");
+	}
+	| clase_vector {
+		clase_actual = VECTOR;
+		fprintf(output, ";R7:\t<clase> ::= <clase_vector>\n");
+	}
+	;
 
-clase_escalar: tipo {fprintf(output, ";R9:\t<clase_escalar> ::= <tipo>\n");}
 
+
+
+/*
+	REGLA 9
+*/
+clase_escalar: tipo {
+		tam_actual = 1;
+		fprintf(output, ";R9:\t<clase_escalar> ::= <tipo>\n");
+		}
+
+
+
+
+/*
+	REGLAS 10 11
+*/
 tipo: TOK_INT {
-	tipo_actual = ENTERO;
-	fprintf(output, ";R10:\t<tipo> ::= int\n");
-}
-| TOK_BOOLEAN {
-	tipo_actual = BOOLEANO;
-	fprintf(output, ";R11:\t<tipo> ::= boolean\n");
-}
-;
+		tipo_actual = ENTERO;
+		fprintf(output, ";R10:\t<tipo> ::= int\n");
+	}
+	| TOK_BOOLEAN {
+		tipo_actual = BOOLEANO;
+		fprintf(output, ";R11:\t<tipo> ::= boolean\n");
+	}
+	;
 
-clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO {fprintf(output, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");}
 
+
+
+/*
+	REGLA 15
+*/
+clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO {
+		//README, el tipo del vector se guarda en la variable global tipo_actual al reducir la regla "tipo" que es $2 en este caso
+		//		por hacer analogía a como lo manejamos en clase_escalar, no hacemos nada con "tipo", pues ya haremos uso de tipo_actual al insertar en la tabla de simbolos
+		tam_actual = $4.valor_entero;
+		fprintf(output, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");
+		}
+
+
+
+
+/*
+	REGLAS 18 19
+*/
 identificadores: identificador {
 			fprintf(output, ";R18:\t<identificadores> ::= <identificador>\n");
 		}
 	| identificador TOK_COMA identificadores {fprintf(output, ";R19:\t<identificadores> ::= <identificador> , <identificadores>\n");}
 	;
 
+
+
+
+/*
+	REGLAS 20 21
+*/
 funciones: funcion funciones {fprintf(output, ";R:20\t<funciones> ::= <funcion> <funciones>\n");}
 	| {
 		fprintf(output, ";R21:\t<funciones> ::= \n");
 	}
 	;
 
+
+
+
+/*
+	REGLA 22
+*/
 funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA {fprintf(output, ";R22:\t<funcion> ::= funcion <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion sentencias }\n");}
 
+
+
+
+/*
+	REGLAS 23 24
+*/
 parametros_funcion: parametro_funcion resto_parametros_funcion {fprintf(output, ";R23:\t<parametros_funcion> ::= <parametro_funcion> <resto_parametros_funcion>\n");}
 	| {fprintf(output, ";R24:\t<parametros_funcion> ::= \n");}
 	;
 
+
+
+
+/*
+	REGLAS 25 26
+*/
 resto_parametros_funcion: TOK_PUNTOYCOMA parametro_funcion resto_parametros_funcion {fprintf(output, ";R25:\t<resto_parametros_funcion> ::= ; <parametro_funcion> <resto_parametros_funcion>\n");}
 	| {fprintf(output, ";R26:\t<resto_parametros_funcion> ::= \n");}
 	;
 
+
+
+
+/*
+	REGLA 27
+*/
 parametro_funcion: tipo identificador {fprintf(output, ";R:27\t<parametro_funcion> ::= <tipo> <identificador>\n");}
 
+
+
+
+/*
+	REGLAS 28 29
+*/
 declaraciones_funcion: declaraciones {fprintf(output, ";R28:\t<declaraciones_funcion> ::= <declaraciones>\n");}
 	| {fprintf(output, ";R29:\t<declaraciones_funcion> ::= \n");}
 	;
 
+
+
+
+/*
+	REGLAS 30 31
+*/
 sentencias: sentencia {fprintf(output, ";R30:\t<sentencias> ::= <sentencia>\n");}
 	| sentencia sentencias {fprintf(output, ";R31:\t<sentencias> ::= <sentencia> <sentencias>\n");}
 	;
 
+
+
+
+/*
+	REGLAS 32 33
+*/
 sentencia: sentencia_simple TOK_PUNTOYCOMA {fprintf(output, ";R32:\t<sentencia> ::= <sentencia_simple> ;\n");}
 	| bloque {fprintf(output, ";R33:\t<sentencia> ::= <bloque>\n");}
 	;
 
+
+
+
+/*
+	REGLAS 34 35 36 38
+*/
 sentencia_simple: asignacion {fprintf(output, ";R34:\t<sentencia_simple> ::= <asignacion>\n");}
 	| lectura {fprintf(output, ";R35:\t<sentencia_simple> ::= <lectura>\n");}
 	| escritura {fprintf(output, ";R36:\t<sentencia_simple> ::= <escritura>\n");}
 	| retorno_funcion {fprintf(output, ";R38:\t<sentencia_simple> ::= <retorno_funcion>\n");}
 	;
 
-bloque: condicional {fprintf(output, ";R40:\t<bloque> ::= <condicional>\n");}
-	| bucle {fprintf(output, ";R41:\t<bloque> ::= <bucle>\n");}
+
+
+
+/*
+	REGLAS 40 41
+*/
+bloque: condicional {
+		//TODO escribir final del bloque (?)
+		fprintf(output, ";R40:\t<bloque> ::= <condicional>\n");
+		}
+	| bucle {
+		//TODO escribir final del bloque (?)
+		fprintf(output, ";R41:\t<bloque> ::= <bucle>\n");
+		}
 	;
 
+
+
+
+/*
+	REGLAS 43 43.2
+*/
 asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
+			INFO_SIMBOLO* info = buscar($1.lexema);
+			if(info == NULL){
+				return yyerror(ERROR_SEMANTICO);
+			} else if(info->categoria == FUNCION){
+				return yyerror("error semantico: asignacion a funcion");
+			} else if(info->clase == VECTOR){
+				return yyerror("error semantico: asignacion de clases incompatibles");
+			} else if(info->tipo != $3.tipo){
+				return yyerror("error semantico: asignacion de tipos incompatibles");
+			}
+			asignar(output, $1.lexema, $3.es_direccion);
+			fprintf(output, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");
+		}
+		| elemento_vector TOK_ASIGNACION exp {
+			INFO_SIMBOLO* info = buscar($1.lexema);
+			if(info == NULL){
+				return yyerror(ERROR_SEMANTICO);
+			} else if(info->categoria == FUNCION){
+				return yyerror("error semantico: asignacion a funcion");
+			} else if(info->clase == ESCALAR){
+				return yyerror("error semantico: asignacion de clases incompatibles");
+			} else if(info->tipo != $3.tipo){
+				return yyerror("error semantico: asignacion de tipos incompatibles");
+			}
+			asignar_vector(output, $3.es_direccion);
+			fprintf(output, ";R43.2:\t<asignacion> ::= <elemento_vector> = <exp>\n");
+		}
+
+
+
+
+/*
+	REGLA 48
+*/
+elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO {
+		//cuando nos encontramos con un elemento vector, tenemos que comprobar que exp
+		//entra dentro del rango del vector. En caso contrario, saltar a la gesiton del
+		//error. Por ello, printeamos el siguiente codigo ensamblador
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
-			return yyerror(ERROR_SEMANTICO);
-		} else if(info->categoria == FUNCION){
-			return yyerror("error semantico: asignacion a funcion");
-		} else if(info->clase == VECTOR){
-			return yyerror("error semantico: asignacion de clases incompatibles");
-		} else if(info->tipo != $3.tipo){
-			return yyerror("error semantico: asignacion de tipos incompatibles");
+			return yyerror("error semantico: no existe el elemento_vector");
+		} else {
+			escribir_elemento_vector(output, $1.lexema, $3.es_direccion, info->tam-1);//el -1 es porque el array va desde 0 hasta tamanio-1. En la generacion de codigo no se gestiona esa logica
+			$$.es_direccion = TRUE;
 		}
-		asignar(output, $1.lexema, $3.es_direccion);
-		fprintf(output, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");
-	}
+		fprintf(output, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");
+		}
 
-elemento_vector: identificador TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO {fprintf(output, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");}
 
-condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(output, ";R50:\t<condicional> ::= if ( <exp> ) { <sentencias> }\n");}
+
+
+/*
+	REGLAS 50 51
+*/
+condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {
+		//TODO
+		//comprobamos que sea distinto de cero.
+		//si no se cumple, saltamos al final del if
+		//ejecutamos instrucciones de dentro del if
+		//final del if	
+		fprintf(output, ";R50:\t<condicional> ::= if ( <exp> ) { <sentencias> }\n");
+		}
 	| TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(output, ";R51:\t<condicional> ::= if ( <exp> ) { <sentencias> } else { <sentencias> }\n");}
 	;
 
+
+
+
+/*
+	REGLA 52
+*/
 bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(output, ";R52:\t<bucle> ::= while ( <exp> ) { <sentencias> }\n");}
 
-lectura: TOK_SCANF identificador {fprintf(output, ";R54:\t<lectura> ::= scanf <identificador>\n");}
 
+
+
+/*
+	REGLA 54
+*/
+lectura: TOK_SCANF TOK_IDENTIFICADOR {
+	leer(output, $2.lexema, $2.tipo);
+	fprintf(output, ";R54:\t<lectura> ::= scanf <identificador>\n");
+	}
+
+
+
+
+/*
+	REGLA 56
+*/
 escritura: TOK_PRINTF exp {
 	escribir(output, $2.es_direccion, $2.tipo);
 	fprintf(output, ";R56:\t<escritura> ::= printf <exp>\n");
 	}
 
+
+
+
+/*
+	REGLA 61
+*/
 retorno_funcion: TOK_RETURN exp {fprintf(output, ";R61:\t<retorno_funcion> ::= return <exp>\n");}
 
+
+
+
+/*
+	REGLAS 72 73 74 75 76 77 78 79 80 81 82 83 85
+*/
 exp: exp TOK_MAS exp  {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
 			return yyerror("error semantico: suma de tipos incompatibles");
 		}
 		sumar(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
+		$$.tipo = ENTERO;
 		fprintf(output, ";R72:\t<exp> ::= <exp> + <exp>\n");
 		}
 	| exp TOK_MENOS exp {
@@ -266,6 +476,7 @@ exp: exp TOK_MAS exp  {
 		}
 		restar(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
+		$$.tipo = ENTERO;
 		fprintf(output, ";R73:\t<exp> ::= <exp> - <exp>\n");}
 	| exp TOK_DIVISION exp {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
@@ -273,6 +484,7 @@ exp: exp TOK_MAS exp  {
 		}
 		dividir(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
+		$$.tipo = ENTERO;
 		fprintf(output, ";R74:\t<exp> ::= <exp> / <exp>\n");}
 	| exp TOK_ASTERISCO exp {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
@@ -280,6 +492,7 @@ exp: exp TOK_MAS exp  {
 		}
 		multiplicar(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
+		$$.tipo = ENTERO;
 		fprintf(output, ";R75:\t<exp> ::= <exp> * <exp>\n");}
 	| TOK_MENOS exp %prec MENOSU {
 		if($2.tipo != ENTERO){
@@ -287,6 +500,7 @@ exp: exp TOK_MAS exp  {
 		}
 		cambiar_signo(output, $2.es_direccion);
 		$$.es_direccion = FALSE;
+		$$.tipo = ENTERO;
 		fprintf(output, ";R76:\t<exp> ::= - <exp>\n");
 		}
 	| exp TOK_AND exp {
@@ -295,25 +509,28 @@ exp: exp TOK_MAS exp  {
 		}
 		y(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
+		$$.tipo = BOOLEANO;
 		fprintf(output, ";R77:\t<exp> ::= <exp> && <exp>\n");
-		}//TODO
+		}
 	| exp TOK_OR exp {
 		if($1.tipo != $3.tipo || $1.tipo != BOOLEANO){
 			return yyerror("error semantico: multiplicacion de tipos incompatibles");
 		}
 		o(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
+		$$.tipo = BOOLEANO;
 		fprintf(output, ";R78:\t<exp> ::= <exp> || <exp>\n");
-		}//TODO
+		}
 	| TOK_NOT exp {
 		if($2.tipo != BOOLEANO){
 			return yyerror("error semantico: negacion de tipos incompatibles");
 		}
-		no(output, $2.es_direccion, cuantos_no);
-		cuantos_no++;
+		no(output, $2.es_direccion, cuantos);
+		cuantos++;
 		$$.es_direccion = FALSE;
+		$$.tipo = BOOLEANO;
 		fprintf(output, ";R79:\t<exp> ::= ! <exp>\n");
-		}//TODO
+		}
 	| TOK_IDENTIFICADOR {
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
@@ -340,7 +557,7 @@ exp: exp TOK_MAS exp  {
 		fprintf(output, ";R82:\t<exp> ::= ( <exp> )\n");
 		}
 	| TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO {
-		$$.tipo = $2.tipo;
+		$$.tipo = BOOLEANO;
 		$$.es_direccion = $2.es_direccion;
 		fprintf(output, ";R83:\t<exp> ::= ( <comparacion> )\n");
 		}
@@ -352,22 +569,99 @@ exp: exp TOK_MAS exp  {
 	| identificador TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {fprintf(output, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}//TODO
 	;
 
+
+
+
+/*
+	REGLAS 89 90
+*/
 lista_expresiones: exp resto_lista_expresiones {fprintf(output, ";R89:\t<lista_expresiones> ::= <exp> <resto_lista_expresiones>\n");}
 	| {fprintf(output, ";R90:\t<lista_expresiones> ::=\n");}
 	;
 
+
+
+
+/*
+	REGLAS 91 92
+*/
 resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones {fprintf(output, ";R91:\t<resto_lista_expresiones> ::= ,<exp> <resto_lista_expresiones>\n");}
 	| {fprintf(output, ";R92:\t<resto_lista_expresiones> ::=\n");}
 	;
 
-comparacion: exp TOK_IGUAL exp {fprintf(output, ";R93:\t<comparacion> ::= <exp> == <exp>\n");}
-	| exp TOK_DISTINTO exp {fprintf(output, ";R94:\t<comparacion> ::= <exp> != <exp>\n");}
-	| exp TOK_MENORIGUAL exp {fprintf(output, ";R95:\t<comparacion> ::= <exp> <= <exp>\n");}
-	| exp TOK_MAYORIGUAL exp {fprintf(output, ";R96:\t<comparacion> ::= <exp> >= <exp>\n");}
-	| exp TOK_MENOR exp {fprintf(output, ";R97:\t<comparacion> ::= <exp> < <exp>\n");}
-	| exp TOK_MAYOR exp {fprintf(output, ";R98:\t<comparacion> ::= <exp> > <exp>\n");}
+
+
+
+/*
+	REGLAS 93 94 95 96 97 98
+*/
+comparacion: exp TOK_IGUAL exp {
+		if($1.tipo != $3.tipo){
+			return yyerror("error semantico: comparacion de tipos incompatibles");
+		}
+		igual(output, $1.es_direccion, $3.es_direccion, cuantos);
+		cuantos++;
+		$$.es_direccion = FALSE;
+		$$.tipo = BOOLEANO;
+		fprintf(output, ";R93:\t<comparacion> ::= <exp> == <exp>\n");
+		}
+	| exp TOK_DISTINTO exp {
+		if($1.tipo != $3.tipo){
+			return yyerror("error semantico: comparacion de tipos incompatibles");
+		}
+		distinto(output, $1.es_direccion, $3.es_direccion, cuantos);
+		cuantos++;
+		$$.es_direccion = FALSE;
+		$$.tipo = BOOLEANO;
+		fprintf(output, ";R94:\t<comparacion> ::= <exp> != <exp>\n");
+		}
+	| exp TOK_MENORIGUAL exp {
+		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
+			return yyerror("error semantico: comparacion de tipos incompatibles");
+		}
+		menor_igual(output, $1.es_direccion, $3.es_direccion, cuantos);
+		cuantos++;
+		$$.es_direccion = FALSE;
+		$$.tipo = BOOLEANO;
+		fprintf(output, ";R95:\t<comparacion> ::= <exp> <= <exp>\n");
+		}
+	| exp TOK_MAYORIGUAL exp {
+		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
+			return yyerror("error semantico: comparacion de tipos incompatibles");
+		}
+		mayor_igual(output, $1.es_direccion, $3.es_direccion, cuantos);
+		cuantos++;
+		$$.es_direccion = FALSE;
+		$$.tipo = BOOLEANO;
+		fprintf(output, ";R96:\t<comparacion> ::= <exp> >= <exp>\n");
+		}
+	| exp TOK_MENOR exp {
+		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
+			return yyerror("error semantico: comparacion de tipos incompatibles");
+		}
+		menor(output, $1.es_direccion, $3.es_direccion, cuantos);
+		cuantos++;
+		$$.es_direccion = FALSE;
+		$$.tipo = BOOLEANO;
+		fprintf(output, ";R97:\t<comparacion> ::= <exp> < <exp>\n");
+		}
+	| exp TOK_MAYOR exp {
+		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
+			return yyerror("error semantico: comparacion de tipos incompatibles");
+		}
+		mayor(output, $1.es_direccion, $3.es_direccion, cuantos);
+		cuantos++;
+		$$.es_direccion = FALSE;
+		$$.tipo = BOOLEANO;fprintf(output, ";R98:\t<comparacion> ::= <exp> > <exp>\n");
+		}
 	;
 
+
+
+
+/*
+	REGLAS 99 100
+*/
 constante: constante_logica {
 		$$.tipo = $1.tipo;
 		$$.es_direccion = $1.es_direccion;
@@ -380,18 +674,34 @@ constante: constante_logica {
 	}
 	;
 
+
+
+
+/*
+	REGLAS 102 103
+*/
 constante_logica: TOK_TRUE {
 		$$.tipo = BOOLEANO;
 		$$.es_direccion = FALSE;
+		$$.valor_entero = TRUE;
+		escribir_operando(output, "1", 0);
 		fprintf(output, ";R102:\t<constante_logica> ::= true\n");
 		}
 	| TOK_FALSE {
 		$$.tipo = BOOLEANO;
-		$$.es_direccion = FALSE;	
+		$$.es_direccion = FALSE;
+		$$.valor_entero = FALSE;
+		escribir_operando(output, "0", 0);
 		fprintf(output, ";R103:\t<constante_logica> ::= false\n");
 		}
 	;
 
+
+
+
+/*
+	REGLA 104
+*/
 constante_entera: TOK_CONSTANTE_ENTERA {
 		$$.tipo = ENTERO;
 		$$.es_direccion = FALSE;
@@ -400,13 +710,20 @@ constante_entera: TOK_CONSTANTE_ENTERA {
 		fprintf(output, ";R104:\t<constante_entera> ::= TOK_CONSTANTE_ENTERA\n");
 	}
 
+
+
+/*
+	REGLA 108
+*/
+//README solo deberia llegarse a esta regla de identificador desde una declaracion, no desde una expresion.
 identificador: TOK_IDENTIFICADOR {
 		fprintf(output, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");
 		if (buscar($1.lexema)){
 			return yyerror("ya existe ese identificador!!");
 		}
 		else{
-			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, 1, 1, 1, 1, 1) == ERR)
+
+			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, 1, 1, 1, 1) == ERR)
 				return yyerror("acho que no inserta!\n");
 		}
 	}

@@ -1,30 +1,36 @@
 #include "../includes/generacion.h"
 
 
-
-/**********************************************************************************/
-
+/**
+ * @brief: escribe en el fichero la cabecera de compatibilidad para que el codigo nasm funcione tambien en otros SO
+ * @param: fpams: el archivo donde se va a escribir
+ */
 void escribir_cabecera_compatibilidad(FILE* fpasm)
 {
 	/* FUNCIÓN PARA PODER HACER EL CÓDIGO MULTIPLATAFORMA U OTROS PARÁMETROS GENERALES TAL VEZ SE PUEDA QUEDAR VACÍA */
-
-	/* G1 */
-
 }
-/**********************************************************************************/
 
+
+
+/**
+ * @brief: escribe la subseccion .data del codigo ensamblador con los mensajes de error en caso de division por cero y de acceso a un array fuera de su rango
+ * @param: fpams: el archivo donde se va a escribir
+ */
 void escribir_subseccion_data(FILE* fpasm)
 {
 	/* FUNCIÓN PARA ESCRIBIR LA SECCIÓN .data:
 		MENSAJES GENERALES (TEXTOS)
 		VARIABLES AUXILIARES NECESARIAS EN EL COMPILADOR QUE DEBAN TENER UN VALOR CONCRETO */
 	/* Variables auxiliares para mensajes de errores en tiempo de ejecución */
-	fprintf(fpasm, "segment .data\n\tmsg_error_division db \"error: divison by zero\", 0\n");
-
-	/* G2 */
-
+	fprintf(fpasm, "segment .data\n\tmsg_error_division db \"error: divison by zero\", 0\n\tmsg_error_range db \"error: index out of range\", 0\n");
 }
-/**********************************************************************************/
+
+
+
+/**
+ * @brief: escribe la cabecera de la subseccion .bss del codigo ensamblador donde se declaran las variables de uso global. Tambien declara por defecto la variable auxiliar __esp
+ * @param: fpams: el archivo donde se va a escribir
+ */
 void escribir_cabecera_bss(FILE* fpasm)
 {
 	/* FUNCIÓN PARA ESCRIBIR EL INICIO DE LA SECCIÓN .bss:
@@ -32,12 +38,17 @@ void escribir_cabecera_bss(FILE* fpasm)
 	*/
 	fprintf(fpasm, "segment .bss\n");
 	fprintf(fpasm, "\t__esp resd 1\n");
-
-
-	/* G3 */
-
 }
-/**********************************************************************************/
+
+
+
+/**
+ * @brief: escribe, en la subseccion .bss, una variable global, dado un tipo y un tamano (si resulta ser un array)
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: nombre: el nombre de la variable a declarar
+ * @param: tipo: el tipo de dato de la variable a declarar. puede ser ENTERO o BOOLEANO
+ * @param: tamano: el tamano que ocupa la variable a declarar. deberia ser 1 si se trata de un escalar. De lo contrario, el numero de elementos del array
+ */
 void declarar_variable(FILE* fpasm, char * nombre,  int tipo,  int tamano)
 /* tipo no hace falta porque para nosotros todo es entero en esta versión, se deja por compatibilidad con futuras versiones*/
 {
@@ -45,48 +56,46 @@ void declarar_variable(FILE* fpasm, char * nombre,  int tipo,  int tamano)
 		SU NOMBRE (HAY QUE PRECEDER DE _)
 		EL TAMANO (1 PARA VARIABLES QUE NO SEAN VECTORES O SU TAMANO EN OTRO CASO )
 		TIPO NOSOTROS USAREMOS ESTE AÑO ENTERO O BOOLEANO
-
 	*/
-
-
-	/* G4 */
 	fprintf(fpasm, "\t_%s resd %d\n", nombre,  tamano);
-
-
 }
 
-/************************************************************************************/
 
+
+/**
+ * @brief: escribe el comienzo del segmento de codigo, con las declaraciones de las funciones de alfalib.o
+ * @param: fpams: el archivo donde se va a escribir
+ */
 void escribir_segmento_codigo(FILE* fpasm)
 {
 	/* ESCRIBE EL INICIO DE LA SECCIÓN DE CÓDIGO
 		DECLARACIONES DE FUNCIONES QUE SE TOMARAN DE OTROS MODULOS
 		DECLARACION DE main COMO ETIQUETA VISIBLE DESDE EL EXTERIOR
 	*/
-
-	/* G5 */
 	fprintf(fpasm, "segment .text\n\tglobal main\n\textern scan_int, print_int, scan_float, print_float, scan_boolean, print_boolean\n\textern print_endofline, print_blank, print_string\n\textern alfa_malloc, alfa_free, ld_float\n");
-
-
 }
 
-/**********************************************************************************/
 
+
+/**
+ * @brief: escribe la etiquieta de inicio: main y ademas guarda en [__esp] la direccion actual de la pila (esp) para poder recuperarla en caso de error
+ * @param: fpams: el archivo donde se va a escribir
+ */
 void escribir_inicio_main(FILE* fpasm)
 {
 	/* ESCRIBE EL PRINCIPIO DEL CÓDIGO PROPIAMENTE DICHO
 		ETIQUETA DE INICIO
 		SALVAGUARDA DEL PUNTERO DE PILA (esp) EN LA VARIABLE A TAL EFECTO (__esp)
-
 	*/
-
-
-	/* G6 */
 	fprintf( fpasm, "\nmain:\n\tmov dword [__esp], esp\n");
 }
 
-/**********************************************************************************/
 
+
+/**
+ * @brief:escribe el final del codigo ensamblador, con la gestion de errores (como division por 0 o acceso fuera del rango de un vector)
+ * @param: fpams: el archivo donde se va a escribir
+ */
 void escribir_fin(FILE* fpasm)
 {
 	/* ESCRITURA DEL FINAL DEL PROGRAMA
@@ -94,26 +103,37 @@ void escribir_fin(FILE* fpasm)
 		RESTAURACION DEL PUNTERO DE PILA A PARTIR DE LA VARIABLE __esp
 		SENTENCIA DE RETORNO DEL PROGRAMA
 	*/
-
-
-	fprintf(fpasm, "\tmov dword esp, [__esp]\n\tret\ngestion_error_div_cero:\n\tpush dword msg_error_division\n\tcall print_string\n\tadd esp, 4\n\tcall print_endofline\n\tmov dword esp, [__esp]\n\tret\n");
-
-
-	/* G7 */
-
+	fprintf(fpasm, "\tmov dword esp, [__esp]\n\tret\n");
+	fprintf(fpasm, "gestion_error_div_cero:\n");
+	fprintf(fpasm, "\tpush dword msg_error_division\n");
+	fprintf(fpasm, "\tcall print_string\n");
+	fprintf(fpasm, "\tadd esp, 4\n");
+	fprintf(fpasm, "\tcall print_endofline\n");
+	fprintf(fpasm, "\tmov dword esp, [__esp]\n");
+	fprintf(fpasm, "\tret\n");
+	fprintf(fpasm, "gestion_error_range:\n");
+	fprintf(fpasm, "\tpush dword msg_error_range\n");
+	fprintf(fpasm, "\tcall print_string\n");
+	fprintf(fpasm, "\tadd esp, 4\n");
+	fprintf(fpasm, "\tcall print_endofline\n");
+	fprintf(fpasm, "\tmov dword esp, [__esp]\n");
+	fprintf(fpasm, "\tret\n");
 }
 
-/**********************************************************************************/
 
+
+/**
+ * @brief: escribe en la pila un operando, que puede ser un valor o el contenido de una direccion de memoria
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: nombre: el nombre del operando a escribir. si fuera un numero, sería el string de dicho numero p.e "27". De lo contrario es el nombre de la variable
+ * @param: es_var: un flag que indica si el operando es un literal (FALSE) o si es una variable (TRUE) en cuyo caso se escribe su valor
+ */
 void escribir_operando(FILE * fpasm, char * nombre, int es_var)
 {
 	/* SE INTRODUCE EL OPERANDO nombre EN LA PILA
 		SI ES UNA VARIABLE (es_var == 1) HAY QUE PRECEDER EL NOMBRE DE _
 		EN OTRO CASO, SE ESCRIBE TAL CUAL
-
 	*/
-
-	/* G8 */
 	if (es_var == 1) {
 		fprintf(fpasm, "\tpush dword  _%s \n", nombre);
 	}
@@ -121,12 +141,42 @@ void escribir_operando(FILE * fpasm, char * nombre, int es_var)
 		fprintf(fpasm, "\tpush dword  %s \n", nombre);
 
 	}
-
-
-
-
 }
 
+
+
+
+/**
+ * @brief: escribe en la pila un operando que va a ser la direccion de un elemento de un vector (indexado). Necesariamente, el indice con el que se indexa el vector
+ * debe encontrarse en la pila, ya sea como valor o como direccion, pues se puede indexar con o bien como [1] o bien [indice] siendo indice una variable
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: nombre: el nombre de la base del vector
+ * @param: indice_es_direccion: un flag que indica si el indice que hay en la cima de la pila es una direccion (TRUE) o un valor (FALSE)
+ * @param: rango: es el ultimo indice valido para el vector. Se utiliza para comprobar que no hay error de acceso (tratar de acceder fuera de los limites del vector)
+ */
+void escribir_elemento_vector(FILE* fpasm, char* nombre, int indice_es_direccion, int rango){
+	//el indice de acceso al array deberia estar en el tope de la pila
+	fprintf(fpasm,"\tpop dword eax\n");
+	if(indice_es_direccion == TRUE)
+		fprintf(fpasm, "\tmov dword eax, [eax]\n");
+	fprintf(fpasm, "\tcmp eax, 0\n");
+	fprintf(fpasm, "\tjl near gestion_error_range\n");//si el indice es menor que 0 en tiempo de ejecucion
+	fprintf(fpasm, "\tcmp eax, %d\n", rango);
+	fprintf(fpasm, "\tjg near gestion_error_range\n");//si el indice es mayor que el rango en tiempo de ejecucion
+	fprintf(fpasm, "\tmov dword edx, _%s\n", nombre);//pillamos en edx la direccion base del array
+	fprintf(fpasm, "\tlea eax, [edx + eax*4]\n");//*4 porque usamos 4 bytes para las palabras
+	fprintf(fpasm, "\tpush dword eax\n");//pusheamos la direccion del elemento vector
+}
+
+
+
+
+/**
+ * @brief: escribe el codigo nasm para asignar a una variable aquello que haya en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: nombre: es el nombre de la variable donde se va a realizar la asignacion (parte derecha de la asignacion)
+ * @param: es_referencia: es un flag que determina si lo que hay en la cima de la pila es una direccion (TRUE) o un valor (FALSE)
+ */
 void asignar(FILE * fpasm, char * nombre, int es_referencia)
 {
 	/* ESCRIBE EL CÓDIGO PARA REALIZAR UNA ASIGNACIÓN DE LO QUE ESTÉ EN LA CIMA DE LA PILA A LA VARIABLE nombre
@@ -134,26 +184,48 @@ void asignar(FILE * fpasm, char * nombre, int es_referencia)
 		SI es_referencia == 0 (ES UN VALOR) DIRECTAMENTE SE ASIGNA A LA VARIABLE _nombre
 		EN OTRO CASO es_referencia == 1 (ES UNA DIRECCIÓN, UN NOMBRE DE VARIABLE) HAY QUE OBTENER SU VALOR DESREFERENCIANDO
 	EL VALOR ES [eax]
-
-
 	*/
-
-
 	if (es_referencia == 0)
 		fprintf(fpasm, "\tpop dword eax\n\tmov dword [_%s], eax\n", nombre);
-
-	else if (es_referencia == 1)
-		/*opcion a*/fprintf(fpasm, "\tpop dword eax\n\tmov eax, dword [eax]\n\tmov dword [_%s], eax\n", nombre);
-	///*OPCION B*/fprintf(fpasm,"pop dword eax\n mov  dword [_nombre], dword [eax]");
-	/*podeis votar  */
-//ninguna es valida->
-//Ambas validas-> I
-//A -> I I I
-//B ->
-	else; //caso error de parametro entrada es_referencia
+	else
+		fprintf(fpasm, "\tpop dword eax\n\tmov eax, dword [eax]\n\tmov dword [_%s], eax\n", nombre);
 }
 
 
+
+
+/**
+ * @brief: escribe el codigo nasm para asignar a un elemento de un vector. En la cima de la pila debe estar la parte derecha de la asignacion y debajo de esta, la
+ * direccion en donde se va a asignar (la parte izquierda de la asignacion)
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia: un flag que determina si la parte derecha de la asignacion es una direccion (TRUE) o es un valor (FALSE)
+ */
+void asignar_vector(FILE * fpasm, int es_referencia){
+	/*
+	en la cima de la pila se encuentran:
+	exp
+	elem_vector
+	de lo contrario esto va a generar codigo que da un sigsev
+	*/
+	//cargamos en eax la parte derecha de la asignacion (exp)
+	fprintf(fpasm,"\tpop dword eax\n");
+	if(es_referencia)
+		fprintf(fpasm,"\tmov dword eax, [eax]\n");
+	//cargamos en edx la parte izquierda de la asignacion, que es una direccion!!
+	fprintf(fpasm,"\tpop edx\n");
+	//hacemos la asignacion efectiva
+	fprintf(fpasm,"\tmov dword [edx], eax\n");
+}
+
+
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la suma de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
 void sumar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 {
 	/* GENERA EL CÓDIGO PARA SUMAR LO QUE HAYA EN LAS DOS PRIMERAS (DESDE LA CIMA)
@@ -166,17 +238,22 @@ void sumar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	   add eax, edx
 	   push dword eax
 	*/
-	/* G10 */
 	fprintf(fpasm, "\tpop dword edx\n");
 	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
 	fprintf(fpasm, "\tadd eax, edx\n");
 	fprintf(fpasm, "\tpush dword eax\n");
-
 }
 
 
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la operacion de cambio de signo sobre el operando que se encuentra en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia: un flag que determina si el elemento que esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
 void cambiar_signo(FILE * fpasm, int es_referencia)
 {
 	/* GENERA EL CÓDIGO PARA CAMBIAR DE SIGNO LO QUE HAYA EN LA CIMA DE LA PILA
@@ -189,13 +266,17 @@ void cambiar_signo(FILE * fpasm, int es_referencia)
 	}
 	fprintf(fpasm, "\tneg eax\n");
 	fprintf(fpasm, "\tpush dword eax\n");
-
-
-	/* G11 */
-
-
 }
 
+
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la operacion de negacion sobre el operando que se encuentra en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia: un flag que determina si el elemento que esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: cuantos_no: es un contador para el salto interno que requiere esta operacion.
+ */
 void no(FILE * fpasm, int es_referencia, int cuantos_no)
 {
 	/* GENERA EL CÓDIGO PARA NEGAR COMO VALOR LÓGICO LO QUE HAYA EN LA CIMA DE LA PILA
@@ -205,10 +286,7 @@ void no(FILE * fpasm, int es_referencia, int cuantos_no)
 	CONTADOR QUE ASEGURA QUE UTILIZARLO COMO AÑADIDO AL NOMBRE DE LAS ETIQUETAS QUE
 	USEMOS (POR EJEMPLO cierto: O falso: ) NOS ASEGURARÁ QUE CADA LLAMADA A no
 	UTILIZA UN JUEGO DE ETIQUETAS ÚNICO
-
 	*/
-
-
 	/* BASICAMENTE HAY QUE GENERAR ESTO
 	        cmp eax, 0
 	        je _uno
@@ -217,7 +295,6 @@ void no(FILE * fpasm, int es_referencia, int cuantos_no)
 	_uno:   push dword 1
 	_fin_not:
 	*/
-
 	fprintf(fpasm, "\tpop eax\n");
 	if (es_referencia == 1) {
 		fprintf(fpasm, "\tcmp dword [eax], 0\n");
@@ -229,35 +306,38 @@ void no(FILE * fpasm, int es_referencia, int cuantos_no)
 	fprintf(fpasm, "\tjmp _fin_negar_%d\n", cuantos_no);
 	fprintf(fpasm, "_uno_%d:   push dword 1\n", cuantos_no);
 	fprintf(fpasm, "_fin_negar_%d:\n", cuantos_no);
-
-
-	/* G12 */
-
 }
 
 
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar una llamada a la funcion de alfalib.o que lee de stdin
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: tipo: es un flag que indica si el valor que se va a leer es de tipo entero (ENTERO) o booleano (BOOLEANO)
+ */
 void leer(FILE * fpasm, char * nombre, int tipo)
 {
 	/* GENERA EL CÓDIGO PARA LEEER UNA VARIABLE DE NOMBRE nombre Y TIPO tipo (ESTE
 	AÑO SÓLO USAREMOS ENTERO Y BOOLEANO) DE CONSOLA LLAMANDO A LAS CORRESPONDIENTES
 	FUNCIONES DE ALFALIB (scan_int Y scan_boolean)
 	*/
-
 	fprintf(fpasm, "\tpush dword _%s\n", nombre);
-
 	if (tipo == ENTERO)
 		fprintf(fpasm, "\tcall scan_int\n");
 	else
 		fprintf(fpasm, "\tcall scan_boolean\n");
-
 	fprintf(fpasm, "\tadd esp, 4\n");
-
-
-	/* G13 */
-
 }
 
 
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar una llamada a la funcion de alfalib.o que escribe en stdout
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: tipo: es un flag que indica si el valor que se va a escribir es de tipo entero (ENTERO) o booleano (BOOLEANO)
+ */
 void escribir(FILE * fpasm, int es_referencia, int tipo)
 {
 	/* GENERA EL CÓDIGO PARA ESCRIBIR POR PANTALLA LO QUE HAYA EN LA CIMA DE LA PILA
@@ -266,25 +346,25 @@ void escribir(FILE * fpasm, int es_referencia, int tipo)
 	FUNCIÓN DE ALFALIB (print_int O print_boolean) DEPENDIENTO DEL TIPO (tipo == BOOLEANO
 	O ENTERO )
 	*/
-
 	if (es_referencia == 1)
 		fprintf(fpasm, "\tpop eax\n\tpush dword [eax]\n");
 	if (tipo != ENTERO)
 		fprintf(fpasm, "\tcall print_boolean\n");
 	else
 		fprintf(fpasm, "\tcall print_int\n");
-
-	//if (es_referencia == 1)
 	fprintf(fpasm, "\tadd esp, 4\n");
-
 	fprintf(fpasm, "\tcall print_endofline\n");
-	/* G14 */
-
-
 }
 
 
 
+
+/**
+ * @brief: escribe el codigo nasm para realizar la resta de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
 void restar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 {
 	/* SIMILAR A SUMAR */
@@ -296,6 +376,15 @@ void restar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	fprintf(fpasm, "\tpush dword eax\n");
 }
 
+
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la multiplicacion de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
 void multiplicar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 {
 	/* SIMILAR A SUMAR (CUIDADO CON edx PORQUE LA MULTIPILICACIÓN DEJA EL RESULTADO
@@ -314,44 +403,34 @@ void multiplicar(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 		fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2)
 		fprintf(fpasm, "\tmov ebx, dword [ebx]\n");
-
 	/*multiplicacion edx:eax = eax*ebx */
 	fprintf(fpasm, "\timul ebx\n");
-
 	/*metemos el resultado en la pila*/
 	fprintf(fpasm, "\tpush dword eax\n");
-
-
-	/* G15 */
-
-
-
 }
 
+
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la division de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
 void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 {
 	/* SIMILAR A MULTIPLICAR (CUIDADO CON LA EXTENSIÓN DE SIGNO PREVIA
 	QUE IMPLICA EL USO DE edx YA QUE cdq EXTIENDE EL SIGNO A edx:eax)
 	Y CUIDADO TAMBIÉN CON CONTROLAR EN TIEMPO DE EJECUCIÓN LA
 	DIVISIÓN ENTRE 0 */
-
-
-	/* G16 */
-
 	fprintf(fpasm, "\tpop dword ebx\n");
 	fprintf(fpasm, "\tpop dword eax\n");
-
 	if (es_referencia_1)
 		fprintf(fpasm, "\tmov eax, [eax]\n");
-
 	/* b.4.19 cbw , cwd , cdq , cwde : sign extensions */
 	fprintf(fpasm, "\tcdq\n");
-
 	/* b.4.117 idiv : signed integer divide */
-
-	/* aqui habria que comprobar que ebx o [ebx] no es 0 y saltar
-	   donde corresponda si lo es */
-
 	if (es_referencia_2) {
 		fprintf(fpasm, "\tcmp dword [ebx], 0\n");
 		fprintf(fpasm, "\tje gestion_error_div_cero\n");
@@ -362,29 +441,39 @@ void dividir(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 		fprintf(fpasm, "\tje gestion_error_div_cero\n");
 		fprintf(fpasm, "\tidiv ebx\n");
 	}
-
 	/* apilamos unicamente el cociente */
 	fprintf(fpasm, "\tpush dword eax\n");
-
-
-
 }
 
+
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la operacion or de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
 void o(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 {
 	/* SIMILAR A SUMAR */
-
 	fprintf(fpasm, "\tpop dword edx\n");
 	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
 	fprintf(fpasm, "\tor eax, edx\n");
 	fprintf(fpasm, "\tpush dword eax\n");
-
-
 }
 
 
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la operacion and de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
 void y(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 {
 	/* SIMILAR A SUMAR */
@@ -394,7 +483,136 @@ void y(FILE * fpasm, int es_referencia_1, int es_referencia_2)
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
 	fprintf(fpasm, "\tand eax, edx\n");
 	fprintf(fpasm, "\tpush dword eax\n");
-
 }
 
 
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la comparacion de igualdad de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
+void igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
+		fprintf(fpasm, "\tpop dword edx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
+	fprintf(fpasm, "\tcmp eax, edx\n");
+	fprintf(fpasm, "\tje _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tpush dword 0\n");//si son distintos haceesto
+	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
+	fprintf(fpasm, "_if_%d:   push dword 1\n", cuantos_if);//si son iguales hace esto
+	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
+}
+
+
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la comparacion de desigualdad de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
+void distinto(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
+	fprintf(fpasm, "\tpop dword edx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
+	fprintf(fpasm, "\tcmp eax, edx\n");
+	fprintf(fpasm, "\tjne _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tpush dword 0\n");//si son iguales hace esto
+	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
+	fprintf(fpasm, "_if_%d:   push dword 1\n", cuantos_if);//si son distintos hace esto
+	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
+}
+
+
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la comparacion "mayor que" de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
+void mayor(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
+	fprintf(fpasm, "\tpop dword edx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
+	fprintf(fpasm, "\tcmp eax, edx\n");
+	fprintf(fpasm, "\tjg _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tpush dword 0\n");//si eax <= edx
+	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
+	fprintf(fpasm, "_if_%d:   push dword 1\n", cuantos_if);//si eax > edx
+	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
+}
+
+
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la comparacion "mayor o igual que" de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
+void mayor_igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
+	fprintf(fpasm, "\tpop dword edx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
+	fprintf(fpasm, "\tcmp eax, edx\n");
+	fprintf(fpasm, "\tjl _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tpush dword 1\n");//si eax >= edx
+	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
+	fprintf(fpasm, "_if_%d:   push dword 0\n", cuantos_if);//si eax < edx
+	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
+}
+
+
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la comparacion "menor que" de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
+void menor(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
+	fprintf(fpasm, "\tpop dword edx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
+	fprintf(fpasm, "\tcmp eax, edx\n");
+	fprintf(fpasm, "\tjl _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tpush dword 0\n");//si eax >= edx
+	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
+	fprintf(fpasm, "_if_%d:   push dword 1\n", cuantos_if);//si eax < edx
+	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
+}
+
+
+
+
+/**
+ * @brief: escribe el codigo nasm para realizar la comparacion "menor o igual que" de los dos operandos que se deben encontrar en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
+void menor_igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
+	fprintf(fpasm, "\tpop dword edx\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
+	fprintf(fpasm, "\tcmp eax, edx\n");
+	fprintf(fpasm, "\tjg _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tpush dword 1\n");//si eax <= edx
+	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
+	fprintf(fpasm, "_if_%d:   push dword 0\n", cuantos_if);//si eax > edx
+	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
+}
