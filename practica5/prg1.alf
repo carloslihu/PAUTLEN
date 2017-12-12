@@ -1,18 +1,8 @@
 main {
 	int x;
-	array int [3] a;
-	a[0] = 0;
-	a[1] = a[0] + 1;
-	a[2] = a[0] + a[1];
-	a[1] = 1 + a[0];
-	printf a[0];
-	printf a[1];
-	printf a[2];
-	a[0] = a[a[2]];
-	x = a[0];
-	printf a[0];
-	printf x;
-	a[0] = x+27;
-	printf a[0];
-	printf a[3];
+	x=0;
+	while((x<10)){
+		printf x;
+		x = x + 1;
+	}
 }

@@ -20,9 +20,12 @@
 	int cuantos_bloque = 0;
 
 	int yyerror(char* s) {
-		fprintf(stderr,"%s",s);
-		if (yylval.atributos.tipo != -1)
-			fprintf(stderr, "****Error sintactico en [lin %d col %d]\n", fil, col - yyleng);
+		if (yylval.atributos.tipo != -1){
+			if(strcmp(s, "syntax error"))
+				fprintf(stderr,"****Error semantico en [lin %d col %d]: %s\n",fil, col-yyleng, s);
+			else
+				fprintf(stderr, "****Error sintactico en [lin %d col %d]\n", fil, col - yyleng);
+		}
 		return -1;
 	}
 %}
@@ -118,7 +121,10 @@
 %type <atributos> constante_logica
 %type <atributos> constante_entera
 %type <atributos> identificador
-
+%type <atributos> if_exp
+%type <atributos> if_exp_sentencias
+%type <atributos> while
+%type <atributos> while_exp
 
 
 
@@ -223,6 +229,9 @@ tipo: TOK_INT {
 clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO {
 		//README, el tipo del vector se guarda en la variable global tipo_actual al reducir la regla "tipo" que es $2 en este caso
 		//		por hacer analogía a como lo manejamos en clase_escalar, no hacemos nada con "tipo", pues ya haremos uso de tipo_actual al insertar en la tabla de simbolos
+		if($4.valor_entero > 64){
+			return yyerror("error semantico: tamano de vector demasiado grande");
+		}
 		tam_actual = $4.valor_entero;
 		fprintf(output, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");
 		}
@@ -406,27 +415,56 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
 /*
 	REGLAS 50 51
 */
-condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {
-		//TODO
+if_exp: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
+		//TODO transparencias en torno a la 59
 		//comprobamos que sea distinto de cero.
 		//si no se cumple, saltamos al final del if
 		//ejecutamos instrucciones de dentro del if
-		//final del if	
-		fprintf(output, ";R50:\t<condicional> ::= if ( <exp> ) { <sentencias> }\n");
+		//final del if
+		if($3.tipo != BOOLEANO)
+			return yyerror("error semantico: condicion no booleana");
+		$$.etiqueta = cuantos++;
+		escribir_if(output, $3.es_direccion, $$.etiqueta);
+		fprintf(output, ";R50:\t<if_exp> ::= if ( <exp> ) { \n");
 		}
-	| TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(output, ";R51:\t<condicional> ::= if ( <exp> ) { <sentencias> } else { <sentencias> }\n");}
-	;
 
+if_exp_sentencias: if_exp sentencias TOK_LLAVEDERECHA {
+		$$.etiqueta = $1.etiqueta;
+		escribir_else(output, $$.etiqueta);
+		fprintf(output, ";R50:\t<if_exp_sentencias> ::= <if_exp_sentencias> <sentencias>\n");
+		}
 
+condicional : if_exp_sentencias TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {
+			escribir_end_else(output, $1.etiqueta);
+			fprintf(output, ";\t<condicional> ::= <if_exp_sentencias> else { <sentencias> } ");
+		}
+	| if_exp sentencias TOK_LLAVEDERECHA {
+			escribir_end_if(output, $1.etiqueta);
+			fprintf(output, ";\t<condicional> ::= <if_exp> }\n");
+		}
 
 
 /*
 	REGLA 52
 */
-bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(output, ";R52:\t<bucle> ::= while ( <exp> ) { <sentencias> }\n");}
+while: TOK_WHILE TOK_PARENTESISIZQUIERDO{
+		$$.etiqueta = cuantos++;
+		escribir_inicio_while(output, $$.etiqueta);
+		//TODO generacion codigo
+	}
 
+while_exp: while exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
+		if($2.tipo != BOOLEANO){
+			return yyerror("error semantico: condicion de while no es booleana");
+		}
+		$$.etiqueta = $1.etiqueta;
+		escribir_condicion_while(output, $2.es_direccion, $$.etiqueta);
+	}
 
-
+bucle: while_exp sentencias TOK_LLAVEDERECHA {
+	escribir_fin_while(output, $1.etiqueta);
+	fprintf(output, ";R52:\t<bucle> ::= while ( <exp> ) { <sentencias> }\n");
+	}
 
 /*
 	REGLA 54
@@ -722,7 +760,6 @@ identificador: TOK_IDENTIFICADOR {
 			return yyerror("ya existe ese identificador!!");
 		}
 		else{
-
 			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, 1, 1, 1, 1) == ERR)
 				return yyerror("acho que no inserta!\n");
 		}

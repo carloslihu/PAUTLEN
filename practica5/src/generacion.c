@@ -616,3 +616,60 @@ void menor_igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuan
 	fprintf(fpasm, "_if_%d:   push dword 0\n", cuantos_if);//si eax > edx
 	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
 }
+
+/**
+ * @brief: escribe el codigo nasm para realizar el comienzo de un if. Obtiene el valor de la condicion de la pila, si es false (0) salta al final del bloque
+ * del if (IMPORTANTE: no olvides llamar a la funcion escribir_end_if para imprimir la etiqueta donde acaba el bloque del if)
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia_: un flag que determina si el elemento que esta en la cima es una direccion (TRUE) o un valor (FALSE)
+ */
+void escribir_if(FILE* fpasm, int es_referencia, int cuantos_if){
+	fprintf(fpasm,"\tpop eax\n");
+	if(es_referencia)
+		fprintf(fpasm,"\tmov eax, [eax]\n");
+	fprintf(fpasm,"\tcmp eax, 0\n");
+	fprintf(fpasm,"\tje near end_if_%d\n", cuantos_if);
+}
+
+/**
+ * @brief: escribe el codigo nasm la etiqueta de finalizacion de un salto if
+ * @param: fpams: el archivo donde se va a escribir
+ */
+void escribir_end_if(FILE* fpasm, int cuantos_if){
+	fprintf(fpasm,"end_if_%d:\n", cuantos_if);
+}
+
+/**
+ * @brief: escribe el codigo nasm para realizar el comienzo de un else. (IMPORTANTE: no olvides llamar a la funcion escribir_end_else para imprimir la etiqueta donde acaba
+ * el bloque else)
+ * @param: fpams: el archivo donde se va a escribir
+ */
+void escribir_else(FILE* fpasm, int cuantos_if){
+	fprintf(fpasm,"\tjmp near end_else_%d\n", cuantos_if);
+	fprintf(fpasm,"end_if_%d:\n", cuantos_if);
+}
+
+/**
+ * @brief: escribe el codigo nasm la etiqueta de finalizacion de un salto else
+ * @param: fpams: el archivo donde se va a escribir
+ */
+void escribir_end_else(FILE * fpasm, int cuantos_if){
+	fprintf(fpasm,"end_else_%d:\n", cuantos_if);
+}
+
+void escribir_condicion_while(FILE* fpasm, int es_referencia, int cuantos){
+	fprintf(fpasm, "\tpop eax\n");
+	if(es_referencia)
+		fprintf(fpasm, "\tmov eax, [eax]\n");
+	fprintf(fpasm, "\tcmp eax, 0\n");
+	fprintf(fpasm, "\tje near end_while_%d\n", cuantos);
+}
+
+void escribir_inicio_while(FILE* fpasm, int cuantos){
+	fprintf(fpasm, "start_while_%d:\n", cuantos);
+}
+
+void escribir_fin_while(FILE* fpasm, int cuantos){
+	fprintf(fpasm, "\tjmp near start_while_%d\n", cuantos);
+	fprintf(fpasm, "end_while_%d\n", cuantos);
+}
