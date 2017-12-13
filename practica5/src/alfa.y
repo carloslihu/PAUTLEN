@@ -17,6 +17,7 @@
 	int clase_actual;
 	int tam_actual;//README esta variable global la uso para poder heredar el tamanio del vector en las declaraciones
 	int cuantos = 0;
+	int en_exp_list = FALSE;//esta variable es un flag que indica si la compilacion se encuentra en una lista de expresiones (llamada a funcion)
 	/*int cuantos_bloque = 0;*/
 
 	int yyerror(char* s) {
@@ -266,7 +267,9 @@ funciones: funcion funciones {fprintf(output, ";R:20\t<funciones> ::= <funcion> 
 /*
 	REGLA 22
 */
-funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA {fprintf(output, ";R22:\t<funcion> ::= funcion <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion sentencias }\n");}
+funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA {
+		fprintf(output, ";R22:\t<funcion> ::= funcion <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion sentencias }\n");
+	}
 
 
 
@@ -613,7 +616,8 @@ exp: exp TOK_MAS exp  {
 		$$.es_direccion = $1.es_direccion;
 		fprintf(output, ";R85:\t<exp> ::= <elemento_vector>\n");
 		}
-	| TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {fprintf(output, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}//TODO
+	| TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {fprintf(output, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}
+	//TODO aqui hay que hacer call _funcion; add esp; push dword eax
 	;
 
 
@@ -622,6 +626,7 @@ exp: exp TOK_MAS exp  {
 /*
 	REGLAS 89 90
 */
+	//TODO solo hace falta ir haciendo push de los valores de los argumentos
 lista_expresiones: exp resto_lista_expresiones {fprintf(output, ";R89:\t<lista_expresiones> ::= <exp> <resto_lista_expresiones>\n");}
 	| {fprintf(output, ";R90:\t<lista_expresiones> ::=\n");}
 	;

@@ -143,6 +143,22 @@ void escribir_operando(FILE * fpasm, char * nombre, int es_var)
 	}
 }
 
+/**
+ * @brief: escribe en la pila un operando, que va a ser siempre el valor, ya sea de un literal o de una variable
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: nombre: el nombre del operando a escribir. si fuera un numero, sería el string de dicho numero p.e "27". De lo contrario es el nombre de la variable
+ * @param: es_var: un flag que indica si el operando es un literal (FALSE) o si es una variable (TRUE)
+ */
+void escribir_parametro_funcion(FILE* fpasm, char* nombre, int es_var){
+		if (es_var == 1) {
+		fprintf(fpasm, "\tpush dword  [_%s] \n", nombre);
+	}
+	else {
+		fprintf(fpasm, "\tpush dword  %s \n", nombre);
+
+	}
+}
+
 
 
 
