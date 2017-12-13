@@ -74,8 +74,18 @@ void escribir_segmento_codigo(FILE* fpasm)
 	*/
 	fprintf(fpasm, "segment .text\n\tglobal main\n\textern scan_int, print_int, scan_float, print_float, scan_boolean, print_boolean\n\textern print_endofline, print_blank, print_string\n\textern alfa_malloc, alfa_free, ld_float\n");
 }
+void escribir_principio_funcion(char* nombre){
+	fprintf( fpasm, "_%s:\n", nombre);
+	fprintf( fpasm, "\tpush ebp\n");
+	fprintf( fpasm, "\tmov ebp, esp\n");
+	fprintf( fpasm, "\tsub esp, 4\n");
+}
 
-
+void escribir_fin_funcion(){
+	fprintf( fpasm, "\tmov esp, ebp\n");
+	fprintf( fpasm, "\tpop ebp\n");
+	fprintf( fpasm, "\tret\n");
+}
 
 /**
  * @brief: escribe la etiquieta de inicio: main y ademas guarda en [__esp] la direccion actual de la pila (esp) para poder recuperarla en caso de error
