@@ -17,7 +17,7 @@
 	int clase_actual;
 	int tam_actual;//README esta variable global la uso para poder heredar el tamanio del vector en las declaraciones
 	int cuantos = 0;
-	int cuantos_bloque = 0;
+	/*int cuantos_bloque = 0;*/
 
 	int yyerror(char* s) {
 		if (yylval.atributos.tipo != -1){
@@ -415,6 +415,15 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
 /*
 	REGLAS 50 51
 */
+condicional : if_exp_sentencias TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {
+			escribir_end_else(output, $1.etiqueta);
+			fprintf(output, ";\t<condicional> ::= <if_exp_sentencias> else { <sentencias> } ");
+		}
+	| if_exp sentencias TOK_LLAVEDERECHA {
+			escribir_end_if(output, $1.etiqueta);
+			fprintf(output, ";\t<condicional> ::= <if_exp> }\n");
+		}
+
 if_exp: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
 		//TODO transparencias en torno a la 59
 		//comprobamos que sea distinto de cero.
@@ -434,14 +443,6 @@ if_exp_sentencias: if_exp sentencias TOK_LLAVEDERECHA {
 		fprintf(output, ";R50:\t<if_exp_sentencias> ::= <if_exp_sentencias> <sentencias>\n");
 		}
 
-condicional : if_exp_sentencias TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {
-			escribir_end_else(output, $1.etiqueta);
-			fprintf(output, ";\t<condicional> ::= <if_exp_sentencias> else { <sentencias> } ");
-		}
-	| if_exp sentencias TOK_LLAVEDERECHA {
-			escribir_end_if(output, $1.etiqueta);
-			fprintf(output, ";\t<condicional> ::= <if_exp> }\n");
-		}
 
 
 /*
@@ -470,6 +471,14 @@ bucle: while_exp sentencias TOK_LLAVEDERECHA {
 	REGLA 54
 */
 lectura: TOK_SCANF TOK_IDENTIFICADOR {
+	INFO_SIMBOLO* aux = buscar($2.lexema);
+	if(!aux){
+		return yyerror("error semantico: variable sin declarar");
+	} else if(aux->clase != ESCALAR){
+		return yyerror("error semantico: ");
+	} else if (aux->categoria != VARIABLE){
+		return yyerror("error semantico: ");
+	}
 	leer(output, $2.lexema, $2.tipo);
 	fprintf(output, ";R54:\t<lectura> ::= scanf <identificador>\n");
 	}
@@ -595,7 +604,7 @@ exp: exp TOK_MAS exp  {
 		fprintf(output, ";R82:\t<exp> ::= ( <exp> )\n");
 		}
 	| TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO {
-		$$.tipo = BOOLEANO;
+		$$.tipo = $2.tipo;
 		$$.es_direccion = $2.es_direccion;
 		fprintf(output, ";R83:\t<exp> ::= ( <comparacion> )\n");
 		}
@@ -604,7 +613,7 @@ exp: exp TOK_MAS exp  {
 		$$.es_direccion = $1.es_direccion;
 		fprintf(output, ";R85:\t<exp> ::= <elemento_vector>\n");
 		}
-	| identificador TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {fprintf(output, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}//TODO
+	| TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {fprintf(output, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}//TODO
 	;
 
 
@@ -634,7 +643,7 @@ resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones {fprintf(output, "
 	REGLAS 93 94 95 96 97 98
 */
 comparacion: exp TOK_IGUAL exp {
-		if($1.tipo != $3.tipo){
+		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
 			return yyerror("error semantico: comparacion de tipos incompatibles");
 		}
 		igual(output, $1.es_direccion, $3.es_direccion, cuantos);
@@ -644,7 +653,7 @@ comparacion: exp TOK_IGUAL exp {
 		fprintf(output, ";R93:\t<comparacion> ::= <exp> == <exp>\n");
 		}
 	| exp TOK_DISTINTO exp {
-		if($1.tipo != $3.tipo){
+		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
 			return yyerror("error semantico: comparacion de tipos incompatibles");
 		}
 		distinto(output, $1.es_direccion, $3.es_direccion, cuantos);

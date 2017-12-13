@@ -500,10 +500,10 @@ void igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
 	fprintf(fpasm, "\tcmp eax, edx\n");
-	fprintf(fpasm, "\tje _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tje _igual_%d\n", cuantos_if);
 	fprintf(fpasm, "\tpush dword 0\n");//si son distintos haceesto
 	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
-	fprintf(fpasm, "_if_%d:   push dword 1\n", cuantos_if);//si son iguales hace esto
+	fprintf(fpasm, "_igual_%d:   push dword 1\n", cuantos_if);//si son iguales hace esto
 	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
 }
 
@@ -522,11 +522,11 @@ void distinto(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
 	fprintf(fpasm, "\tcmp eax, edx\n");
-	fprintf(fpasm, "\tjne _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tjne _distinto_%d\n", cuantos_if);
 	fprintf(fpasm, "\tpush dword 0\n");//si son iguales hace esto
-	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
-	fprintf(fpasm, "_if_%d:   push dword 1\n", cuantos_if);//si son distintos hace esto
-	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
+	fprintf(fpasm, "\tjmp _fin_distinto_%d\n", cuantos_if);
+	fprintf(fpasm, "_distinto_%d:   push dword 1\n", cuantos_if);//si son distintos hace esto
+	fprintf(fpasm, "_fin_distinto_%d:\n", cuantos_if);
 }
 
 
@@ -544,11 +544,11 @@ void mayor(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
 	fprintf(fpasm, "\tcmp eax, edx\n");
-	fprintf(fpasm, "\tjg _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tjg _mayor_%d\n", cuantos_if);
 	fprintf(fpasm, "\tpush dword 0\n");//si eax <= edx
-	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
-	fprintf(fpasm, "_if_%d:   push dword 1\n", cuantos_if);//si eax > edx
-	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
+	fprintf(fpasm, "\tjmp _fin_mayor_%d\n", cuantos_if);
+	fprintf(fpasm, "_mayor_%d:   push dword 1\n", cuantos_if);//si eax > edx
+	fprintf(fpasm, "_fin_mayor_%d:\n", cuantos_if);
 }
 
 
@@ -566,11 +566,11 @@ void mayor_igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuan
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
 	fprintf(fpasm, "\tcmp eax, edx\n");
-	fprintf(fpasm, "\tjl _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tjl _no_mayor_igual_%d\n", cuantos_if);
 	fprintf(fpasm, "\tpush dword 1\n");//si eax >= edx
-	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
-	fprintf(fpasm, "_if_%d:   push dword 0\n", cuantos_if);//si eax < edx
-	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
+	fprintf(fpasm, "\tjmp _fin_mayor_igual_%d\n", cuantos_if);
+	fprintf(fpasm, "_no_mayor_igual_%d:   push dword 0\n", cuantos_if);//si eax < edx
+	fprintf(fpasm, "_fin_mayor_igual_%d:\n", cuantos_if);
 }
 
 
@@ -588,11 +588,11 @@ void menor(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
 	fprintf(fpasm, "\tcmp eax, edx\n");
-	fprintf(fpasm, "\tjl _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tjl _menor_%d\n", cuantos_if);
 	fprintf(fpasm, "\tpush dword 0\n");//si eax >= edx
-	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
-	fprintf(fpasm, "_if_%d:   push dword 1\n", cuantos_if);//si eax < edx
-	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
+	fprintf(fpasm, "\tjmp _fin_menor_%d\n", cuantos_if);
+	fprintf(fpasm, "_menor_%d:   push dword 1\n", cuantos_if);//si eax < edx
+	fprintf(fpasm, "_fin_menor_%d:\n", cuantos_if);
 }
 
 
@@ -610,11 +610,11 @@ void menor_igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuan
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
 	fprintf(fpasm, "\tcmp eax, edx\n");
-	fprintf(fpasm, "\tjg _if_%d\n", cuantos_if);
+	fprintf(fpasm, "\tjg _no_menor_igual_%d\n", cuantos_if);
 	fprintf(fpasm, "\tpush dword 1\n");//si eax <= edx
-	fprintf(fpasm, "\tjmp _fin_igual_%d\n", cuantos_if);
-	fprintf(fpasm, "_if_%d:   push dword 0\n", cuantos_if);//si eax > edx
-	fprintf(fpasm, "_fin_igual_%d:\n", cuantos_if);
+	fprintf(fpasm, "\tjmp _fin_menor_igual_%d\n", cuantos_if);
+	fprintf(fpasm, "_no_menor_igual_%d:   push dword 0\n", cuantos_if);//si eax > edx
+	fprintf(fpasm, "_fin_menor_igual_%d:\n", cuantos_if);
 }
 
 /**
