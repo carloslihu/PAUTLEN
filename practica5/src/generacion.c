@@ -74,14 +74,24 @@ void escribir_segmento_codigo(FILE* fpasm)
 	*/
 	fprintf(fpasm, "segment .text\n\tglobal main\n\textern scan_int, print_int, scan_float, print_float, scan_boolean, print_boolean\n\textern print_endofline, print_blank, print_string\n\textern alfa_malloc, alfa_free, ld_float\n");
 }
-void escribir_principio_funcion(char* nombre){
+
+/**
+ * @brief: escribe el comienzo de una funcion
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: nombre: el nombre de la funcion
+ */
+void escribir_principio_funcion(FILE* fpasm, char* nombre) {
 	fprintf( fpasm, "_%s:\n", nombre);
 	fprintf( fpasm, "\tpush ebp\n");
 	fprintf( fpasm, "\tmov ebp, esp\n");
 	fprintf( fpasm, "\tsub esp, 4\n");
 }
 
-void escribir_fin_funcion(){
+/**
+ * @brief: escribe el final de una funcion
+ * @param: fpams: el archivo donde se va a escribir
+ */
+void escribir_fin_funcion(FILE* fpasm) {
 	fprintf( fpasm, "\tmov esp, ebp\n");
 	fprintf( fpasm, "\tpop ebp\n");
 	fprintf( fpasm, "\tret\n");
@@ -159,8 +169,8 @@ void escribir_operando(FILE * fpasm, char * nombre, int es_var)
  * @param: nombre: el nombre del operando a escribir. si fuera un numero, sería el string de dicho numero p.e "27". De lo contrario es el nombre de la variable
  * @param: es_var: un flag que indica si el operando es un literal (FALSE) o si es una variable (TRUE)
  */
-void escribir_parametro_funcion(FILE* fpasm, char* nombre, int es_var){
-		if (es_var == 1) {
+void escribir_parametro_funcion(FILE* fpasm, char* nombre, int es_var) {
+	if (es_var == 1) {
 		fprintf(fpasm, "\tpush dword  [_%s] \n", nombre);
 	}
 	else {
@@ -180,10 +190,10 @@ void escribir_parametro_funcion(FILE* fpasm, char* nombre, int es_var){
  * @param: indice_es_direccion: un flag que indica si el indice que hay en la cima de la pila es una direccion (TRUE) o un valor (FALSE)
  * @param: rango: es el ultimo indice valido para el vector. Se utiliza para comprobar que no hay error de acceso (tratar de acceder fuera de los limites del vector)
  */
-void escribir_elemento_vector(FILE* fpasm, char* nombre, int indice_es_direccion, int rango){
+void escribir_elemento_vector(FILE* fpasm, char* nombre, int indice_es_direccion, int rango) {
 	//el indice de acceso al array deberia estar en el tope de la pila
-	fprintf(fpasm,"\tpop dword eax\n");
-	if(indice_es_direccion == TRUE)
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (indice_es_direccion == TRUE)
 		fprintf(fpasm, "\tmov dword eax, [eax]\n");
 	fprintf(fpasm, "\tcmp eax, 0\n");
 	fprintf(fpasm, "\tjl near gestion_error_range\n");//si el indice es menor que 0 en tiempo de ejecucion
@@ -226,7 +236,7 @@ void asignar(FILE * fpasm, char * nombre, int es_referencia)
  * @param: fpams: el archivo donde se va a escribir
  * @param: es_referencia: un flag que determina si la parte derecha de la asignacion es una direccion (TRUE) o es un valor (FALSE)
  */
-void asignar_vector(FILE * fpasm, int es_referencia){
+void asignar_vector(FILE * fpasm, int es_referencia) {
 	/*
 	en la cima de la pila se encuentran:
 	exp
@@ -234,13 +244,13 @@ void asignar_vector(FILE * fpasm, int es_referencia){
 	de lo contrario esto va a generar codigo que da un sigsev
 	*/
 	//cargamos en eax la parte derecha de la asignacion (exp)
-	fprintf(fpasm,"\tpop dword eax\n");
-	if(es_referencia)
-		fprintf(fpasm,"\tmov dword eax, [eax]\n");
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia)
+		fprintf(fpasm, "\tmov dword eax, [eax]\n");
 	//cargamos en edx la parte izquierda de la asignacion, que es una direccion!!
-	fprintf(fpasm,"\tpop edx\n");
+	fprintf(fpasm, "\tpop edx\n");
 	//hacemos la asignacion efectiva
-	fprintf(fpasm,"\tmov dword [edx], eax\n");
+	fprintf(fpasm, "\tmov dword [edx], eax\n");
 }
 
 
@@ -520,8 +530,8 @@ void y(FILE * fpasm, int es_referencia_1, int es_referencia_2)
  * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
  * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
  */
-void igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
-		fprintf(fpasm, "\tpop dword edx\n");
+void igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if) {
+	fprintf(fpasm, "\tpop dword edx\n");
 	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
 	if (es_referencia_2) fprintf(fpasm, "\tmov edx, dword [edx]\n");
@@ -542,7 +552,7 @@ void igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if
  * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
  * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
  */
-void distinto(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
+void distinto(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if) {
 	fprintf(fpasm, "\tpop dword edx\n");
 	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
@@ -564,7 +574,7 @@ void distinto(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos
  * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
  * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
  */
-void mayor(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
+void mayor(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if) {
 	fprintf(fpasm, "\tpop dword edx\n");
 	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
@@ -586,7 +596,7 @@ void mayor(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if
  * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
  * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
  */
-void mayor_igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
+void mayor_igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if) {
 	fprintf(fpasm, "\tpop dword edx\n");
 	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
@@ -608,7 +618,7 @@ void mayor_igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuan
  * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
  * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
  */
-void menor(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
+void menor(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if) {
 	fprintf(fpasm, "\tpop dword edx\n");
 	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
@@ -630,7 +640,7 @@ void menor(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if
  * @param: es_referencia_1: un flag que determina si el elemento que NO esta en la cima es una direccion (TRUE) o un valor (FALSE)
  * @param: es_referencia_2: un flag que determina si el elemento que SI esta en la cima es una direccion (TRUE) o un valor (FALSE)
  */
-void menor_igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if){
+void menor_igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuantos_if) {
 	fprintf(fpasm, "\tpop dword edx\n");
 	fprintf(fpasm, "\tpop dword eax\n");
 	if (es_referencia_1) fprintf(fpasm, "\tmov eax, dword [eax]\n");
@@ -649,20 +659,20 @@ void menor_igual(FILE* fpasm, int es_referencia_1, int es_referencia_2, int cuan
  * @param: fpams: el archivo donde se va a escribir
  * @param: es_referencia_: un flag que determina si el elemento que esta en la cima es una direccion (TRUE) o un valor (FALSE)
  */
-void escribir_if(FILE* fpasm, int es_referencia, int cuantos_if){
-	fprintf(fpasm,"\tpop eax\n");
-	if(es_referencia)
-		fprintf(fpasm,"\tmov eax, [eax]\n");
-	fprintf(fpasm,"\tcmp eax, 0\n");
-	fprintf(fpasm,"\tje near end_if_%d\n", cuantos_if);
+void escribir_if(FILE* fpasm, int es_referencia, int cuantos_if) {
+	fprintf(fpasm, "\tpop eax\n");
+	if (es_referencia)
+		fprintf(fpasm, "\tmov eax, [eax]\n");
+	fprintf(fpasm, "\tcmp eax, 0\n");
+	fprintf(fpasm, "\tje near end_if_%d\n", cuantos_if);
 }
 
 /**
  * @brief: escribe el codigo nasm la etiqueta de finalizacion de un salto if
  * @param: fpams: el archivo donde se va a escribir
  */
-void escribir_end_if(FILE* fpasm, int cuantos_if){
-	fprintf(fpasm,"end_if_%d:\n", cuantos_if);
+void escribir_end_if(FILE* fpasm, int cuantos_if) {
+	fprintf(fpasm, "end_if_%d:\n", cuantos_if);
 }
 
 /**
@@ -670,32 +680,32 @@ void escribir_end_if(FILE* fpasm, int cuantos_if){
  * el bloque else)
  * @param: fpams: el archivo donde se va a escribir
  */
-void escribir_else(FILE* fpasm, int cuantos_if){
-	fprintf(fpasm,"\tjmp near end_else_%d\n", cuantos_if);
-	fprintf(fpasm,"end_if_%d:\n", cuantos_if);
+void escribir_else(FILE* fpasm, int cuantos_if) {
+	fprintf(fpasm, "\tjmp near end_else_%d\n", cuantos_if);
+	fprintf(fpasm, "end_if_%d:\n", cuantos_if);
 }
 
 /**
  * @brief: escribe el codigo nasm la etiqueta de finalizacion de un salto else
  * @param: fpams: el archivo donde se va a escribir
  */
-void escribir_end_else(FILE * fpasm, int cuantos_if){
-	fprintf(fpasm,"end_else_%d:\n", cuantos_if);
+void escribir_end_else(FILE * fpasm, int cuantos_if) {
+	fprintf(fpasm, "end_else_%d:\n", cuantos_if);
 }
 
-void escribir_condicion_while(FILE* fpasm, int es_referencia, int cuantos){
+void escribir_condicion_while(FILE* fpasm, int es_referencia, int cuantos) {
 	fprintf(fpasm, "\tpop eax\n");
-	if(es_referencia)
+	if (es_referencia)
 		fprintf(fpasm, "\tmov eax, [eax]\n");
 	fprintf(fpasm, "\tcmp eax, 0\n");
 	fprintf(fpasm, "\tje near end_while_%d\n", cuantos);
 }
 
-void escribir_inicio_while(FILE* fpasm, int cuantos){
+void escribir_inicio_while(FILE* fpasm, int cuantos) {
 	fprintf(fpasm, "start_while_%d:\n", cuantos);
 }
 
-void escribir_fin_while(FILE* fpasm, int cuantos){
+void escribir_fin_while(FILE* fpasm, int cuantos) {
 	fprintf(fpasm, "\tjmp near start_while_%d\n", cuantos);
 	fprintf(fpasm, "end_while_%d\n", cuantos);
 }

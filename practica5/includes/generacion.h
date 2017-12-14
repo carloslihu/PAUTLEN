@@ -37,6 +37,19 @@ void declarar_variable(FILE* fpasm, char * nombre,  int tipo,  int tamano);
 void escribir_segmento_codigo(FILE* fpasm);
 
 /**
+ * @brief: escribe el comienzo de una funcion
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: nombre: el nombre de la funcion
+ */
+void escribir_principio_funcion(FILE* fpasm, char* nombre);
+
+/**
+ * @brief: escribe el final de una funcion
+ * @param: fpams: el archivo donde se va a escribir
+ */
+void escribir_fin_funcion(FILE* fpasm);
+
+/**
  * @brief: escribe la etiquieta de inicio: main y ademas guarda en [__esp] la direccion actual de la pila (esp) para poder recuperarla en caso de error
  * @param: fpams: el archivo donde se va a escribir
  */
