@@ -6,6 +6,8 @@ typedef struct _TablaSimbolos TablaSimbolos;
 
 
 int printTablaGlobal(FILE* fp);
+AMBITO getAmbito();
+STATUS setAmbito(AMBITO amb);
 INFO_SIMBOLO* buscar(const char* lexema);
 STATUS insertar(const char* lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param);
 STATUS declararGlobal(const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int tam, int n_locales, int pos_local, int n_params, int pos_param);

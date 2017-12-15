@@ -15,6 +15,27 @@ int printTablaGlobal(FILE* fp){
 	return printTablaSimbolos(fp, ts->tablaSimbolosGlobal);
 }
 
+AMBITO getAmbito(){
+	if(!ts)
+		return GLOBAL;
+	return ts->ambito;
+}
+
+STATUS setAmbito(AMBITO amb){
+	if(!ts){
+		ts = (TablaSimbolos*)calloc(1, sizeof(TablaSimbolos));
+		ts->tablaSimbolosGlobal = NULL;
+		ts->tablaSimbolosLocal = NULL;
+		ts->ambito = amb;
+		return OK;
+	}
+	if(amb == GLOBAL)
+		cerrarFuncion();
+
+	ts->ambito = amb;
+	return OK;
+}
+
 INFO_SIMBOLO* buscar(const char* lexema){
 	if(!ts){
 		ts = (TablaSimbolos*)calloc(1, sizeof(TablaSimbolos));

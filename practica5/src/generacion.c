@@ -163,24 +163,6 @@ void escribir_operando(FILE * fpasm, char * nombre, int es_var)
 	}
 }
 
-/**
- * @brief: escribe en la pila un operando, que va a ser siempre el valor, ya sea de un literal o de una variable
- * @param: fpams: el archivo donde se va a escribir
- * @param: nombre: el nombre del operando a escribir. si fuera un numero, sería el string de dicho numero p.e "27". De lo contrario es el nombre de la variable
- * @param: es_var: un flag que indica si el operando es un literal (FALSE) o si es una variable (TRUE)
- */
-void escribir_parametro_funcion(FILE* fpasm, char* nombre, int es_var) {
-	if (es_var == 1) {
-		fprintf(fpasm, "\tpush dword  [_%s] \n", nombre);
-	}
-	else {
-		fprintf(fpasm, "\tpush dword  %s \n", nombre);
-
-	}
-}
-
-
-
 
 /**
  * @brief: escribe en la pila un operando que va a ser la direccion de un elemento de un vector (indexado). Necesariamente, el indice con el que se indexa el vector
@@ -708,4 +690,33 @@ void escribir_inicio_while(FILE* fpasm, int cuantos) {
 void escribir_fin_while(FILE* fpasm, int cuantos) {
 	fprintf(fpasm, "\tjmp near start_while_%d\n", cuantos);
 	fprintf(fpasm, "end_while_%d\n", cuantos);
+}
+
+/**
+ * @brief: escribe el final de una funcion
+ * @param: fpams: el archivo donde se va a escribir
+ */
+void escribir_llamada_funcion(FILE* fpasm, char* nombre, int n_args){
+	fprintf(fpasm, "\tcall _%s\n", nombre);
+	fprintf(fpasm, "\tadd esp, %d\n", 4*n_args);
+	//importante, el retorno de la funcion debe estar en eax
+	//en alfa no hay funciones sin retorno (tipo void)
+	fprintf(fpasm, "\tpush dword eax\n");
+}
+
+
+/**
+ * @brief: escribe en la pila un operando, que va a ser siempre el valor, ya sea de un literal o de una variable
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: nombre: el nombre del operando a escribir. si fuera un numero, sería el string de dicho numero p.e "27". De lo contrario es el nombre de la variable
+ * @param: es_var: un flag que indica si el operando es un literal (FALSE) o si es una variable (TRUE)
+ */
+void escribir_parametro_funcion(FILE* fpasm, char* nombre, int es_var) {
+	if (es_var == 1) {
+		fprintf(fpasm, "\tpush dword  [_%s] \n", nombre);
+	}
+	else {
+		fprintf(fpasm, "\tpush dword  %s \n", nombre);
+
+	}
 }

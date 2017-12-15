@@ -1,5 +1,6 @@
 %{
 #define ERROR_SEMANTICO "error semantico\n"
+#define MAX_TAM_VECTOR 64
 #include <stdio.h>
 	/*#include "tokens.h"*/
 #include "../includes/alfa.h"
@@ -18,9 +19,15 @@
 	int tam_actual;//README esta variable global la uso para poder heredar el tamanio del vector en las declaraciones
 	int cuantos = 0;
 	int en_exp_list = FALSE;//esta variable es un flag que indica si la compilacion se encuentra en una lista de expresiones (llamada a funcion)
+	int pos_parametro_actual = 0;
+	int num_parametros_actual
+	int pos_variable_local_actual = 1;
+	int num_variables_local_actual = 0;
 	/*int cuantos_bloque = 0;*/
+	//TODO quiza crear una variable global que sea un flag para indicar si estamos en ambito global o local (?)
 
 	int yyerror(char* s) {
+		//TODO liberar las tablas de simbolos en caso de error
 		if (yylval.atributos.tipo != -1){
 			if(strcmp(s, "syntax error"))
 				fprintf(stderr,"****Error semantico en [lin %d col %d]: %s\n",fil, col-yyleng, s);
@@ -134,6 +141,7 @@
 	REGLA 1
 */
 programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones escritura1 funciones escritura2 sentencias TOK_LLAVEDERECHA {
+	//TODO liberar las tablas de simbolos en caso de compilacion correcta
 		escribir_fin(output);
 		fprintf(output, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");
 	}
@@ -230,8 +238,10 @@ tipo: TOK_INT {
 clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO {
 		//README, el tipo del vector se guarda en la variable global tipo_actual al reducir la regla "tipo" que es $2 en este caso
 		//		por hacer analogía a como lo manejamos en clase_escalar, no hacemos nada con "tipo", pues ya haremos uso de tipo_actual al insertar en la tabla de simbolos
-		if($4.valor_entero > 64){
+		if($4.valor_entero > MAX_TAM_VECTOR){
 			return yyerror("error semantico: tamano de vector demasiado grande");
+		} else if($4.valor_entero <= 0){
+			return yyerror("error semantico: tamano de vector demasiado pequeno");
 		}
 		tam_actual = $4.valor_entero;
 		fprintf(output, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");
@@ -267,10 +277,47 @@ funciones: funcion funciones {fprintf(output, ";R:20\t<funciones> ::= <funcion> 
 /*
 	REGLA 22
 */
-funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA {
+funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
+		INFO_SIMBOLO *info;
+		setAmbito(GLOBAL);
+		info = buscar($1.lexema);
+		if(info == NULL){
+			return yyerror("FATAL ERROR: encontrar el identificador de una funcion!!");
+		}
+		info->n_param = num_parametros_actual;
 		fprintf(output, ";R22:\t<funcion> ::= funcion <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion sentencias }\n");
-	}
+}
 
+fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion {
+	INFO_SIMBOLO * info = buscar($1.lexema);
+	if(info == NULL){
+		return yyerror("FATAL ERROR: encontrar el identificador de una funcion!!");
+	}
+	info->n_param = num_parametros_actual;
+	$$.lexema = $1.lexema;
+}
+
+fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR {
+	INFO_SIMBOLO * info;
+	info = buscar($3.lexema);
+	if(info != NULL){
+		return yyerror("error semantico: nombre de identificador ya usado");
+	}
+	//README asumo que la clase de la funcion es siempre escalar
+	//README segun las transparencias: en un principio la informacion disponible ahora mismo del id de la funcion es solo el tipo del retorno.
+	//			mas adelante se completara esta informacion
+	insertar($3.lexema, FUNCION, tipo_actual, ESCALAR, 1, 0, 0, 0, 0);
+	setAmbito(LOCAL);
+	//antes hemos insertado en el ambito global pero tambien hay que insertar en el ambito local el id de la funcion
+	insertar($3.lexema, FUNCION, tipo_actual, ESCALAR, 1, 0, 0, 0, 0);
+	//seteamos las variables que llevan la cuenta de numeros y posiciones variables locales y parametros
+	num_variables_local_actual = 0;
+	pos_variable_local_actual = 1;
+	num_parametros_actual = 0;
+	pos_parametro_actual = 0;
+
+	$$.lexema = $3.lexema;
+}
 
 
 
@@ -297,8 +344,23 @@ resto_parametros_funcion: TOK_PUNTOYCOMA parametro_funcion resto_parametros_func
 /*
 	REGLA 27
 */
-parametro_funcion: tipo identificador {fprintf(output, ";R:27\t<parametro_funcion> ::= <tipo> <identificador>\n");}
+parametro_funcion: tipo idpf {fprintf(output, ";R:27\t<parametro_funcion> ::= <tipo> <identificador>\n");}
 
+//regla para declaracion de parametros de funcion
+idpf: TOK_IDENTIFICADOR {
+	INFO_SIMBOLO * info;
+	info = buscar($1.lexema)
+	if (info != NULL){
+		return yyerror("error semantico: identificador ya utilizado");
+	}
+	
+	//README la clase de un parametro puede ser vector? en principio voy a asumir que no
+	//README realmente en esta insercion, el num_parametros_actual no hace falta insertarlo (porque es info para la funcion)
+	if(insertar($1.lexema, PARAMETRO, tipo_actual, ESCALAR, 1, -1, -1, num_parametros_actual, pos_parametro_actual) == ERR)
+		return yyerror("error al insertar en la tabla de simbolos");
+	num_parametros_actual++;
+	pos_parametro_actual++;
+}
 
 
 
@@ -616,19 +678,42 @@ exp: exp TOK_MAS exp  {
 		$$.es_direccion = $1.es_direccion;
 		fprintf(output, ";R85:\t<exp> ::= <elemento_vector>\n");
 		}
-	| TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {fprintf(output, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}
-	//TODO aqui hay que hacer call _funcion; add esp; push dword eax
+	| TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO ini_lista_expresiones lista_expresiones TOK_PARENTESISDERECHO {
+		INFO_SIMBOLO* info = buscar($1.lexema);
+		if(info == NULL){
+			return yyerror("error semantico: funcion sin declarar");
+		} else if(info->categoria != FUNCION){
+			return yyerror("error semantico: no es una funcion");
+		} else if(info->n_param != $3.valor_entero){//README usamos valor entero en este caso para almacenar el numero de expresiones de lista_expresiones
+			return yyerror("error semantico: numero de argumentos erroneo en la llamada a la funcion");
+		}
+		escribir_llamada_funcion(output, info->lexema, info->n_param);
+		$$.tipo = info->tipo;
+		$$.es_direccion = FALSE;
+		en_exp_list = FALSE;//marcamos el flag a false para indicar que hemos terminado de procesar la lista de expresiones
+		fprintf(output, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");
+	}
 	;
 
-
+//he creado esta regla lambda para poder marcar el comienzo de la lista de expresiones mediante la variable global
+ini_lista_expresiones : {
+	en_exp_list = TRUE;
+}
 
 
 /*
 	REGLAS 89 90
 */
+	//README tengo que heredar de alguna forma la informacion de la funcion para comprobar los tipos de los argumentos?
 	//TODO solo hace falta ir haciendo push de los valores de los argumentos
-lista_expresiones: exp resto_lista_expresiones {fprintf(output, ";R89:\t<lista_expresiones> ::= <exp> <resto_lista_expresiones>\n");}
-	| {fprintf(output, ";R90:\t<lista_expresiones> ::=\n");}
+lista_expresiones: exp resto_lista_expresiones {
+		$$.valor_entero = 1 + $2.valor_entero;
+		fprintf(output, ";R89:\t<lista_expresiones> ::= <exp> <resto_lista_expresiones>\n");
+		}
+	| {
+		$$.valor_entero = 0;
+		fprintf(output, ";R90:\t<lista_expresiones> ::=\n");
+		}
 	;
 
 
@@ -769,13 +854,23 @@ constante_entera: TOK_CONSTANTE_ENTERA {
 */
 //README solo deberia llegarse a esta regla de identificador desde una declaracion, no desde una expresion.
 identificador: TOK_IDENTIFICADOR {
+		AMBITO amb = getAmbito();
 		fprintf(output, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");
 		if (buscar($1.lexema)){
 			return yyerror("ya existe ese identificador!!");
 		}
 		else{
-			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, 1, 1, 1, 1) == ERR)
-				return yyerror("acho que no inserta!\n");
+			if(amb == GLOBAL){
+				if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, -1, -1, -1, -1) == ERR)
+					return yyerror("acho que no inserta!\n");
+			} else {
+				//tratamos de insertar una variable local
+				if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, num_variables_local_actual, pos_variable_local_actual, -1, -1) == ERR)
+					return yyerror("acho que no inserta!\n");
+				//actualizamos las variables que llevan la cuenta de las posiciones y numeros de las variables locales
+				pos_variable_local_actual++;
+				num_variables_local_actual++;
+			}
 		}
 	}
 
