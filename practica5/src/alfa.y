@@ -27,11 +27,13 @@
 	/*int cuantos_bloque = 0;*/
 	//TODO quiza crear una variable global que sea un flag para indicar si estamos en ambito global o local (?)
 
+	char str[100];//variable para impresion de errores
+
 	int yyerror(char* s) {
 		//TODO liberar las tablas de simbolos en caso de error
 		if (yylval.atributos.tipo != -1){
 			if(strcmp(s, "syntax error"))
-				fprintf(stderr,"****Error semantico en [lin %d col %d]: %s\n",fil, col-yyleng, s);
+				fprintf(stderr,"****Error semantico en lin %d: %s\n",fil, s);
 			else
 				fprintf(stderr, "****Error sintactico en [lin %d col %d]\n", fil, col - yyleng);
 		}
@@ -239,10 +241,9 @@ tipo: TOK_INT {
 clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO {
 		//README, el tipo del vector se guarda en la variable global tipo_actual al reducir la regla "tipo" que es $2 en este caso
 		//		por hacer analogía a como lo manejamos en clase_escalar, no hacemos nada con "tipo", pues ya haremos uso de tipo_actual al insertar en la tabla de simbolos
-		if($4.valor_entero > MAX_TAM_VECTOR){
-			return yyerror("error semantico: tamano de vector demasiado grande");
-		} else if($4.valor_entero <= 0){
-			return yyerror("error semantico: tamano de vector demasiado pequeno");
+		if($4.valor_entero > MAX_TAM_VECTOR || $4.valor_entero <= 0){
+			//TODO <nombre_vector>?
+			return yyerror("El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).");
 		}
 		tam_actual = $4.valor_entero;
 		fprintf(output, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");
@@ -283,6 +284,7 @@ funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
 		setAmbito(GLOBAL);
 		info = buscar($1.lexema);
 		if(info == NULL){
+			//TODO
 			return yyerror("FATAL ERROR: encontrar el identificador de una funcion!!");
 		}
 		if(num_retornos == 0)
@@ -295,6 +297,7 @@ funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
 fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion {
 	INFO_SIMBOLO * info = buscar($1.lexema);
 	if(info == NULL){
+		//TODO
 		return yyerror("FATAL ERROR: encontrar el identificador de una funcion!!");
 	}
 	info->n_param = num_parametros_actual;
@@ -309,7 +312,7 @@ fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR {
 	INFO_SIMBOLO * info;
 	info = buscar($3.lexema);
 	if(info != NULL){
-		return yyerror("error semantico: nombre de identificador ya usado");
+		return yyerror("Declaracion duplicada.");
 	}
 	//README asumo que la clase de la funcion es siempre escalar
 	//README segun las transparencias: en un principio la informacion disponible ahora mismo del id de la funcion es solo el tipo del retorno.
@@ -361,11 +364,12 @@ idpf: TOK_IDENTIFICADOR {
 	INFO_SIMBOLO * info;
 	info = buscar($1.lexema)
 	if (info != NULL){
-		return yyerror("error semantico: identificador ya utilizado");
+		return yyerror("Declaracion duplicada.");
 	}
 	
 	//README la clase de un parametro puede ser vector? en principio voy a asumir que no
 	//README realmente en esta insercion, el num_parametros_actual no hace falta insertarlo (porque es info para la funcion)
+	//TODO
 	if(insertar($1.lexema, PARAMETRO, tipo_actual, ESCALAR, 1, -1, -1, num_parametros_actual, pos_parametro_actual) == ERR)
 		return yyerror("error al insertar en la tabla de simbolos");
 	num_parametros_actual++;
@@ -449,13 +453,14 @@ bloque: condicional {
 asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
 			INFO_SIMBOLO* info = buscar($1.lexema);
 			if(info == NULL){
-				return yyerror(ERROR_SEMANTICO);
+				sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
+				return yyerror(str);
 			} else if(info->categoria == FUNCION){
-				return yyerror("error semantico: asignacion a funcion");
+				return yyerror("Asignacion incompatible");
 			} else if(info->clase == VECTOR){
-				return yyerror("error semantico: asignacion de clases incompatibles");
+				return yyerror("Asignacion incompatible");
 			} else if(info->tipo != $3.tipo){
-				return yyerror("error semantico: asignacion de tipos incompatibles");
+				return yyerror("Asignacion incompatible");
 			}
 			asignar(output, $1.lexema, $3.es_direccion);
 			fprintf(output, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");
@@ -463,13 +468,15 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
 		| elemento_vector TOK_ASIGNACION exp {
 			INFO_SIMBOLO* info = buscar($1.lexema);
 			if(info == NULL){
-				return yyerror(ERROR_SEMANTICO);
+				//TODO SOBRA?? MIRAR ELEMENTO_VECTOR
+				/*sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
+				return yyerror(str);*/
 			} else if(info->categoria == FUNCION){
-				return yyerror("error semantico: asignacion a funcion");
+				return yyerror("Asignacion incompatible");
 			} else if(info->clase == ESCALAR){
-				return yyerror("error semantico: asignacion de clases incompatibles");
+				return yyerror("Asignacion incompatible");
 			} else if(info->tipo != $3.tipo){
-				return yyerror("error semantico: asignacion de tipos incompatibles");
+				return yyerror("Asignacion incompatible");
 			}
 			asignar_vector(output, $3.es_direccion);
 			fprintf(output, ";R43.2:\t<asignacion> ::= <elemento_vector> = <exp>\n");
@@ -487,9 +494,10 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
 		//error. Por ello, printeamos el siguiente codigo ensamblador
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
-			return yyerror("error semantico: no existe el elemento_vector");
+			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
+			return yyerror(str);
 		} else if(getAmbito() == LOCAL){
-			return yyerror("error semantico: no se puden utilizar parametros o variables locales como vectores");
+			return yyerror("Variable local de tipo no escalar.");
 		} else {
 			escribir_elemento_vector(output, $1.lexema, $3.es_direccion, info->tam-1);//el -1 es porque el array va desde 0 hasta tamanio-1. En la generacion de codigo no se gestiona esa logica
 			$$.es_direccion = TRUE;
@@ -519,7 +527,7 @@ if_exp: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIE
 		//ejecutamos instrucciones de dentro del if
 		//final del if
 		if($3.tipo != BOOLEANO)
-			return yyerror("error semantico: condicion no booleana");
+			return yyerror("Condicional con condicion de tipo int.");
 		$$.etiqueta = cuantos++;
 		escribir_if(output, $3.es_direccion, $$.etiqueta);
 		fprintf(output, ";R50:\t<if_exp> ::= if ( <exp> ) { \n");
@@ -544,7 +552,7 @@ while: TOK_WHILE TOK_PARENTESISIZQUIERDO{
 
 while_exp: while exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
 		if($2.tipo != BOOLEANO){
-			return yyerror("error semantico: condicion de while no es booleana");
+			return yyerror("Condicional con condicion de tipo int.");
 		}
 		$$.etiqueta = $1.etiqueta;
 		escribir_condicion_while(output, $2.es_direccion, $$.etiqueta);
@@ -561,10 +569,13 @@ bucle: while_exp sentencias TOK_LLAVEDERECHA {
 lectura: TOK_SCANF TOK_IDENTIFICADOR {
 	INFO_SIMBOLO* aux = buscar($2.lexema);
 	if(!aux){
-		return yyerror("error semantico: variable sin declarar");
+		sprintf(str,"Acceso a variable no declarada (%s)",$2.lexema);
+		return yyerror(str);
 	} else if(aux->clase != ESCALAR){
+		//TODO que imprimir
 		return yyerror("error semantico: ");
 	} else if (aux->categoria != VARIABLE){
+		//TODO que imprimir
 		return yyerror("error semantico: ");
 	}
 	leer(output, $2.lexema, $2.tipo);
@@ -598,7 +609,7 @@ retorno_funcion: TOK_RETURN exp {fprintf(output, ";R61:\t<retorno_funcion> ::= r
 */
 exp: exp TOK_MAS exp  {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
-			return yyerror("error semantico: suma de tipos incompatibles");
+			return yyerror("Operacion aritmetica con operandos boolean.");
 		}
 		sumar(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
@@ -607,7 +618,7 @@ exp: exp TOK_MAS exp  {
 		}
 	| exp TOK_MENOS exp {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
-			return yyerror("error semantico: resta de tipos incompatibles");
+			return yyerror("Operacion aritmetica con operandos boolean.");
 		}
 		restar(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
@@ -615,7 +626,7 @@ exp: exp TOK_MAS exp  {
 		fprintf(output, ";R73:\t<exp> ::= <exp> - <exp>\n");}
 	| exp TOK_DIVISION exp {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
-			return yyerror("error semantico: division de tipos incompatibles");
+			return yyerror("Operacion aritmetica con operandos boolean.");
 		}
 		dividir(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
@@ -623,7 +634,7 @@ exp: exp TOK_MAS exp  {
 		fprintf(output, ";R74:\t<exp> ::= <exp> / <exp>\n");}
 	| exp TOK_ASTERISCO exp {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
-			return yyerror("error semantico: multiplicacion de tipos incompatibles");
+			return yyerror("Operacion aritmetica con operandos boolean.");
 		}
 		multiplicar(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
@@ -631,7 +642,7 @@ exp: exp TOK_MAS exp  {
 		fprintf(output, ";R75:\t<exp> ::= <exp> * <exp>\n");}
 	| TOK_MENOS exp %prec MENOSU {
 		if($2.tipo != ENTERO){
-			return yyerror("error semantico: cambio de signo de tipo incompatible");
+			return yyerror("Operacion aritmetica con operandos boolean.");
 		}
 		cambiar_signo(output, $2.es_direccion);
 		$$.es_direccion = FALSE;
@@ -640,7 +651,7 @@ exp: exp TOK_MAS exp  {
 		}
 	| exp TOK_AND exp {
 		if($1.tipo != $3.tipo || $1.tipo != BOOLEANO){
-			return yyerror("error semantico: multiplicacion de tipos incompatibles");
+			return yyerror("Operacion logica con operandos int.");
 		}
 		y(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
@@ -649,7 +660,7 @@ exp: exp TOK_MAS exp  {
 		}
 	| exp TOK_OR exp {
 		if($1.tipo != $3.tipo || $1.tipo != BOOLEANO){
-			return yyerror("error semantico: multiplicacion de tipos incompatibles");
+			return yyerror("Operacion logica con operandos int.");
 		}
 		o(output, $1.es_direccion, $3.es_direccion);
 		$$.es_direccion = FALSE;
@@ -658,7 +669,7 @@ exp: exp TOK_MAS exp  {
 		}
 	| TOK_NOT exp {
 		if($2.tipo != BOOLEANO){
-			return yyerror("error semantico: negacion de tipos incompatibles");
+			return yyerror("Operacion logica con operandos int.");
 		}
 		no(output, $2.es_direccion, cuantos);
 		cuantos++;
@@ -670,12 +681,14 @@ exp: exp TOK_MAS exp  {
 		//TODO comprobar si estamos en lista de expresiones (llamada a funcion) o no
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
-			return yyerror("error semantico: identificador sin declarar");
+			//SIGO POR AQUI
+			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
+			return yyerror(str);
 		}
 		else if(info->categoria == FUNCION){
-			return yyerror("error semantico: el identificador es una funcion");
+			return yyerror("Asignacion incompatible");
 		} else if(info->clase == VECTOR){
-			return yyerror("error semantico: el identificador es un vector");
+			return yyerror("Asignacion incompatible");
 		}
 		$$.tipo = info->tipo;
 		$$.es_direccion = TRUE;
@@ -714,11 +727,12 @@ exp: exp TOK_MAS exp  {
 	| idf_llamada_fn TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
-			return yyerror("error semantico: funcion sin declarar");
+			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
+			return yyerror(str);
 		} else if(info->categoria != FUNCION){
-			return yyerror("error semantico: no es una funcion");
+			return yyerror("Asignacion incompatible.");
 		} else if(info->n_param != $3.valor_entero){//README usamos valor entero en este caso para almacenar el numero de expresiones de lista_expresiones
-			return yyerror("error semantico: numero de argumentos erroneo en la llamada a la funcion");
+			return yyerror("Numero incorrecto de parametros en llamada a funcion.");
 		}
 		escribir_llamada_funcion(output, info->lexema, info->n_param);
 		$$.tipo = info->tipo;
@@ -769,7 +783,7 @@ resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones {fprintf(output, "
 */
 comparacion: exp TOK_IGUAL exp {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
-			return yyerror("error semantico: comparacion de tipos incompatibles");
+			return yyerror("Comparacion con operandos boolean.");
 		}
 		igual(output, $1.es_direccion, $3.es_direccion, cuantos);
 		cuantos++;
@@ -779,7 +793,7 @@ comparacion: exp TOK_IGUAL exp {
 		}
 	| exp TOK_DISTINTO exp {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
-			return yyerror("error semantico: comparacion de tipos incompatibles");
+			return yyerror("Comparacion con operandos boolean.");
 		}
 		distinto(output, $1.es_direccion, $3.es_direccion, cuantos);
 		cuantos++;
@@ -789,7 +803,7 @@ comparacion: exp TOK_IGUAL exp {
 		}
 	| exp TOK_MENORIGUAL exp {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
-			return yyerror("error semantico: comparacion de tipos incompatibles");
+			return yyerror("Comparacion con operandos boolean.");
 		}
 		menor_igual(output, $1.es_direccion, $3.es_direccion, cuantos);
 		cuantos++;
@@ -799,7 +813,7 @@ comparacion: exp TOK_IGUAL exp {
 		}
 	| exp TOK_MAYORIGUAL exp {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
-			return yyerror("error semantico: comparacion de tipos incompatibles");
+			return yyerror("Comparacion con operandos boolean.");
 		}
 		mayor_igual(output, $1.es_direccion, $3.es_direccion, cuantos);
 		cuantos++;
@@ -809,7 +823,7 @@ comparacion: exp TOK_IGUAL exp {
 		}
 	| exp TOK_MENOR exp {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
-			return yyerror("error semantico: comparacion de tipos incompatibles");
+			return yyerror("Comparacion con operandos boolean.");
 		}
 		menor(output, $1.es_direccion, $3.es_direccion, cuantos);
 		cuantos++;
@@ -819,7 +833,7 @@ comparacion: exp TOK_IGUAL exp {
 		}
 	| exp TOK_MAYOR exp {
 		if($1.tipo != $3.tipo || $1.tipo != ENTERO){
-			return yyerror("error semantico: comparacion de tipos incompatibles");
+			return yyerror("Comparacion con operandos boolean.");
 		}
 		mayor(output, $1.es_direccion, $3.es_direccion, cuantos);
 		cuantos++;
@@ -892,7 +906,7 @@ identificador: TOK_IDENTIFICADOR {
 		AMBITO amb = getAmbito();
 		fprintf(output, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");
 		if (buscar($1.lexema)){
-			return yyerror("ya existe ese identificador!!");
+			return yyerror("Declaracion duplicada.");
 		}
 		else{
 			if(amb == GLOBAL){
