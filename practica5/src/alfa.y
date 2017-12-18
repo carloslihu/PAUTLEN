@@ -20,9 +20,10 @@
 	int cuantos = 0;
 	int en_exp_list = FALSE;//esta variable es un flag que indica si la compilacion se encuentra en una lista de expresiones (llamada a funcion)
 	int pos_parametro_actual = 0;
-	int num_parametros_actual
-	int pos_variable_local_actual = 1;
+	int num_parametros_actual = 0;
+	int pos_variable_local_actual = 1;//README este es 1 o deberia ser 0 y la otra global de posiciones deberia ser 1 ??? ver generacion codigo t 81
 	int num_variables_local_actual = 0;
+	int num_retornos = 0;
 	/*int cuantos_bloque = 0;*/
 	//TODO quiza crear una variable global que sea un flag para indicar si estamos en ambito global o local (?)
 
@@ -284,7 +285,10 @@ funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
 		if(info == NULL){
 			return yyerror("FATAL ERROR: encontrar el identificador de una funcion!!");
 		}
-		info->n_param = num_parametros_actual;
+		if(num_retornos == 0)
+			fprintf(stderr, "\nWARNING: no hay retorno de funcion %s\n", $1.lexema);
+		//info->n_param = num_parametros_actual;
+		escribir_fin_funcion(output);
 		fprintf(output, ";R22:\t<funcion> ::= funcion <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion sentencias }\n");
 }
 
@@ -294,6 +298,10 @@ fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTES
 		return yyerror("FATAL ERROR: encontrar el identificador de una funcion!!");
 	}
 	info->n_param = num_parametros_actual;
+	info->n_locales = num_variables_local_actual;
+	//TODO generar codigo comienzo funcion
+	escribir_principio_funcion(output, info->lexema);
+	declarar_locales(output, num_variables_local_actual);
 	$$.lexema = $1.lexema;
 }
 
@@ -315,6 +323,8 @@ fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR {
 	pos_variable_local_actual = 1;
 	num_parametros_actual = 0;
 	pos_parametro_actual = 0;
+	num_retornos = 0;
+	clase_actual = ESCALAR;
 
 	$$.lexema = $3.lexema;
 }
@@ -367,12 +377,23 @@ idpf: TOK_IDENTIFICADOR {
 /*
 	REGLAS 28 29
 */
+
 declaraciones_funcion: declaraciones {fprintf(output, ";R28:\t<declaraciones_funcion> ::= <declaraciones>\n");}
 	| {fprintf(output, ";R29:\t<declaraciones_funcion> ::= \n");}
 	;
 
 
+/*
+declaraciones_funcion: declaracion_funcion declaraciones_funcion
+	|
+	;
 
+declaracion_funcion: tipo resto_declaracion_funcion TOK_PUNTOYCOMA
+
+resto_declaracion_funcion: TOK_IDENTIFICADOR TOK_COMA resto_declaracion_funcion
+	|
+	;
+*/
 
 /*
 	REGLAS 30 31
@@ -467,6 +488,8 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
 			return yyerror("error semantico: no existe el elemento_vector");
+		} else if(getAmbito() == LOCAL){
+			return yyerror("error semantico: no se puden utilizar parametros o variables locales como vectores");
 		} else {
 			escribir_elemento_vector(output, $1.lexema, $3.es_direccion, info->tam-1);//el -1 es porque el array va desde 0 hasta tamanio-1. En la generacion de codigo no se gestiona esa logica
 			$$.es_direccion = TRUE;
@@ -644,6 +667,7 @@ exp: exp TOK_MAS exp  {
 		fprintf(output, ";R79:\t<exp> ::= ! <exp>\n");
 		}
 	| TOK_IDENTIFICADOR {
+		//TODO comprobar si estamos en lista de expresiones (llamada a funcion) o no
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
 			return yyerror("error semantico: identificador sin declarar");
@@ -655,7 +679,15 @@ exp: exp TOK_MAS exp  {
 		}
 		$$.tipo = info->tipo;
 		$$.es_direccion = TRUE;
-		escribir_operando(output, $1.lexema, TRUE);
+		if(getAmbito()== GLOBAL){
+			escribir_operando(output, $1.lexema, TRUE);
+		} else{
+			if(info->categoria == VARIABLE){//caso de variable local
+				escribir_operando_local(output, info->pos_local);
+			} else {//caso de parametro
+				escribir_operando_parametro(output, num_parametros_actual, info->pos_param);
+			}
+		}
 		fprintf(output, ";R80:\t<exp> ::= <identificador>\n");
 		}
 	| constante {
@@ -674,11 +706,12 @@ exp: exp TOK_MAS exp  {
 		fprintf(output, ";R83:\t<exp> ::= ( <comparacion> )\n");
 		}
 	| elemento_vector {
+		//TODO comprobar si estamos en lista de expresiones (llamada a funcion) o no
 		$$.tipo = $1.tipo;
 		$$.es_direccion = $1.es_direccion;
 		fprintf(output, ";R85:\t<exp> ::= <elemento_vector>\n");
 		}
-	| TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO ini_lista_expresiones lista_expresiones TOK_PARENTESISDERECHO {
+	| idf_llamada_fn TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
 			return yyerror("error semantico: funcion sin declarar");
@@ -695,10 +728,12 @@ exp: exp TOK_MAS exp  {
 	}
 	;
 
-//he creado esta regla lambda para poder marcar el comienzo de la lista de expresiones mediante la variable global
-ini_lista_expresiones : {
+idf_llamada_fn: TOK_IDENTIFICADOR{
+	//TODO mirar tabla de simbolos el nombre del id (que sera la funcion)
+	$$.lexema = $1.lexema;
 	en_exp_list = TRUE;
 }
+
 
 
 /*

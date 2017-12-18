@@ -60,6 +60,11 @@ void declarar_variable(FILE* fpasm, char * nombre,  int tipo,  int tamano)
 	fprintf(fpasm, "\t_%s resd %d\n", nombre,  tamano);
 }
 
+void declarar_locales(FILE*fpasm, int num_locales){
+	int num = 4*num_locales;
+	fprintf(fpasm, "\tsup esp, %d\n", num);
+}
+
 
 
 /**
@@ -84,7 +89,6 @@ void escribir_principio_funcion(FILE* fpasm, char* nombre) {
 	fprintf( fpasm, "_%s:\n", nombre);
 	fprintf( fpasm, "\tpush ebp\n");
 	fprintf( fpasm, "\tmov ebp, esp\n");
-	fprintf( fpasm, "\tsub esp, 4\n");
 }
 
 /**
@@ -184,6 +188,18 @@ void escribir_elemento_vector(FILE* fpasm, char* nombre, int indice_es_direccion
 	fprintf(fpasm, "\tmov dword edx, _%s\n", nombre);//pillamos en edx la direccion base del array
 	fprintf(fpasm, "\tlea eax, [edx + eax*4]\n");//*4 porque usamos 4 bytes para las palabras
 	fprintf(fpasm, "\tpush dword eax\n");//pusheamos la direccion del elemento vector
+}
+
+void escribir_operando_local(FILE* fpasm, int pos_variable){
+	int num = 4*pos_variable;
+	fprintf(fpasm, "\tlea eax, [ebp - 4*%d]\n", num);
+	fprintf(fpasm, "\tpush dword [eax]\n");
+}
+
+void escribir_operando_parametro(FILE* fpasm, int num_param, int pos_param){
+	int num = 4 + 4*(num_param - pos_param);
+	fprintf(fpasm, "\tlea eax, [ebp + %d]\n", num);
+	fprintf(fpasm, "\tpush dword [eax]\n");
 }
 
 
