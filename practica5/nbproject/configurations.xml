@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="95">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="/home/javier/Escritorio/bitbucket/Paulen/practica5" name="0">
+      <df name="src">
+        <in>generacion.c</in>
+        <in>lex.yy.c</in>
+        <in>main.c</in>
+        <in>tablaHash.c</in>
+        <in>tablaSimbolos.c</in>
+        <in>y.tab.c</in>
+      </df>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>/home/javier/Escritorio/bitbucket/Paulen/practica5/Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>/home/javier/Escritorio/bitbucket/Paulen/practica5</Elem>
+  </sourceRootList>
+  <projectmakefile>/home/javier/Escritorio/bitbucket/Paulen/practica5/Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-g"/>
+      </flagsDictionary>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>/home/javier/Escritorio/bitbucket/Paulen/practica5</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath>/home/javier/Escritorio/bitbucket/Paulen/practica5/alfa</executablePath>
+          <cTool>
+            <incDir>
+              <pElem>.</pElem>
+            </incDir>
+          </cTool>
+        </makeTool>
+      </makefileType>
+      <item path="/home/javier/Escritorio/bitbucket/Paulen/practica5/src/generacion.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="/home/javier/Escritorio/bitbucket/Paulen/practica5/src/lex.yy.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="/home/javier/Escritorio/bitbucket/Paulen/practica5/src/main.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="/home/javier/Escritorio/bitbucket/Paulen/practica5/src/tablaHash.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="/home/javier/Escritorio/bitbucket/Paulen/practica5/src/tablaSimbolos.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="/home/javier/Escritorio/bitbucket/Paulen/practica5/src/y.tab.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

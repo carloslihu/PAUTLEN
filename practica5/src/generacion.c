@@ -60,9 +60,14 @@ void declarar_variable(FILE* fpasm, char * nombre,  int tipo,  int tamano)
 	fprintf(fpasm, "\t_%s resd %d\n", nombre,  tamano);
 }
 
+/**
+ * @brief: escribe el codigo ensamblador para reservar memoria en la pila para un numero num_locales de variables
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: num_locales: el numero de variables locales para las que reservar memoria
+ */
 void declarar_locales(FILE*fpasm, int num_locales){
 	int num = 4*num_locales;
-	fprintf(fpasm, "\tsup esp, %d\n", num);
+	fprintf(fpasm, "\tsub esp, %d\n", num);
 }
 
 
@@ -190,19 +195,43 @@ void escribir_elemento_vector(FILE* fpasm, char* nombre, int indice_es_direccion
 	fprintf(fpasm, "\tpush dword eax\n");//pusheamos la direccion del elemento vector
 }
 
+/**
+ * @brief: escribe en la pila un operando (que es una variable local)
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: pos_variable: la posicion de la variable local a escribir
+ */
 void escribir_operando_local(FILE* fpasm, int pos_variable){
 	int num = 4*pos_variable;
-	fprintf(fpasm, "\tlea eax, [ebp - 4*%d]\n", num);
-	fprintf(fpasm, "\tpush dword [eax]\n");
+	fprintf(fpasm, "\tpush dword [ebp - %d]\n", num);
+	//fprintf(fpasm, "\tpush dword [eax]\n");
 }
 
+/**
+ * @brief: escribe en la pila un operando (que es un parametro). Funcion que se llama dentro de las declaraciones del codigo de una funcion. No en su llamada
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: num_param: el numero de parametros que tiene la funcion
+ * @param: pos_param: la posicion del parametro a escribir
+ */
 void escribir_operando_parametro(FILE* fpasm, int num_param, int pos_param){
 	int num = 4 + 4*(num_param - pos_param);
-	fprintf(fpasm, "\tlea eax, [ebp + %d]\n", num);
-	fprintf(fpasm, "\tpush dword [eax]\n");
+	fprintf(fpasm, "\tpush dword [ebp + %d]\n", num);
+	//fprintf(fpasm, "\tpush dword [eax]\n");
 }
 
+/*
+void escribir_contenido_de_operando(FILE* fpasm, char* nombre){
+	fprintf(fpasm, "\tpush dword [_%s]\n",nombre);
+}
+*/
 
+/**
+ * @brief: escribe el codigo nasm para sacar del top de la pila una direccion y escribir en la pila el contenido de dicha direccion
+ * @param: fpams: el archivo donde se va a escribir
+ */
+void escribir_contenido_del_top(FILE* fpasm){
+	fprintf(fpasm, "\tpop eax\n");
+	fprintf(fpasm, "\tpush dword [eax]\n");
+}
 
 
 /**
@@ -224,7 +253,6 @@ void asignar(FILE * fpasm, char * nombre, int es_referencia)
 	else
 		fprintf(fpasm, "\tpop dword eax\n\tmov eax, dword [eax]\n\tmov dword [_%s], eax\n", nombre);
 }
-
 
 
 
@@ -251,7 +279,13 @@ void asignar_vector(FILE * fpasm, int es_referencia) {
 	fprintf(fpasm, "\tmov dword [edx], eax\n");
 }
 
-
+void asignar_local(FILE* fpasm, int pos_variable, int es_referencia){
+	int num = pos_variable*4;
+	fprintf(fpasm, "\tpop dword eax\n");
+	if (es_referencia)
+		fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	fprintf(fpasm, "\tmov dword [ebp - %d], eax\n", num);
+}
 
 
 /**

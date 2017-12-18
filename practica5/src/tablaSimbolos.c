@@ -9,6 +9,14 @@ struct _TablaSimbolos{
 
 TablaSimbolos * ts = NULL;
 
+int printTablaLocal(FILE* fp){
+	if(!ts || !ts->tablaSimbolosLocal || !fp){
+		fprintf(fp, "\n\nNO HAY TABLA LOCAL\n\n");
+		return 0;
+	}
+	return printTablaSimbolos(fp, ts->tablaSimbolosLocal);
+}
+
 int printTablaGlobal(FILE* fp){
 	if(!ts || !ts->tablaSimbolosGlobal || !fp)
 		return 0;
@@ -119,6 +127,7 @@ STATUS declararFuncion(const char* lexema,  CATEGORIA categ, TIPO tipo, CLASE cl
 
 	liberar_tabla(ts->tablaSimbolosLocal);
 	ts->tablaSimbolosLocal = crear_tabla(TABLESIZE);
+	ts->ambito = LOCAL;
 
 	if (ts->tablaSimbolosLocal) {
 		if (insertar_simbolo(ts->tablaSimbolosGlobal, lexema, categ, tipo, clase, tam, n_locales, pos_local, n_params, pos_param) == ERR) {

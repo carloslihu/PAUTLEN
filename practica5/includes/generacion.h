@@ -31,6 +31,13 @@ void escribir_cabecera_bss(FILE* fpasm);
 void declarar_variable(FILE* fpasm, char * nombre,  int tipo,  int tamano);
 
 /**
+ * @brief: escribe el codigo ensamblador para reservar memoria en la pila para un numero num_locales de variables
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: num_locales: el numero de variables locales para las que reservar memoria
+ */
+void declarar_locales(FILE*fpasm, int num_locales);
+
+/**
  * @brief: escribe el comienzo del segmento de codigo, con las declaraciones de las funciones de alfalib.o
  * @param: fpams: el archivo donde se va a escribir
  */
@@ -48,6 +55,12 @@ void escribir_principio_funcion(FILE* fpasm, char* nombre);
  * @param: fpams: el archivo donde se va a escribir
  */
 void escribir_fin_funcion(FILE* fpasm);
+
+/**
+ * @brief: escribe el final de una funcion
+ * @param: fpams: el archivo donde se va a escribir
+ */
+void escribir_llamada_funcion(FILE* fpasm, char* nombre, int n_args);
 
 /**
  * @brief: escribe la etiquieta de inicio: main y ademas guarda en [__esp] la direccion actual de la pila (esp) para poder recuperarla en caso de error
@@ -80,6 +93,34 @@ void escribir_operando(FILE * fpasm, char * nombre, int es_var);
 void escribir_elemento_vector(FILE* fpasm, char* nombre, int indice_es_direccion, int rango);
 
 /**
+ * @brief: escribe en la pila un operando (que es una variable local)
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: pos_variable: la posicion de la variable local a escribir
+ */
+void escribir_operando_local(FILE* fpasm, int pos_variable);
+
+/**
+ * @brief: escribe en la pila un operando (que es un parametro). Funcion que se llama dentro de las declaraciones del codigo de una funcion. No en su llamada
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: num_param: el numero de parametros que tiene la funcion
+ * @param: pos_param: la posicion del parametro a escribir
+ */
+void escribir_operando_parametro(FILE* fpasm, int num_param, int pos_param);
+
+/**
+ * @brief: escribe en la pila el contenido de un operando (de una variable global)
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: nombre: el nombre de la variable global
+ */
+//void escribir_contenido_de_operando(FILE* fpasm, char* nombre):
+
+/**
+ * @brief: escribe el codigo nasm para sacar del top de la pila una direccion y escribir en la pila el contenido de dicha direccion
+ * @param: fpams: el archivo donde se va a escribir
+ */
+void escribir_contenido_del_top(FILE* fpasm);
+
+/**
  * @brief: escribe el codigo nasm para asignar a una variable aquello que haya en la cima de la pila
  * @param: fpams: el archivo donde se va a escribir
  * @param: nombre: es el nombre de la variable donde se va a realizar la asignacion (parte derecha de la asignacion)
@@ -94,6 +135,14 @@ void asignar(FILE * fpasm, char * nombre, int es_referencia);
  * @param: es_referencia: un flag que determina si la parte derecha de la asignacion es una direccion (TRUE) o es un valor (FALSE)
  */
 void asignar_vector(FILE * fpasm, int es_referencia);
+
+/**
+ * @brief: escribe el codigo nasm para asignar a una variable local aquello que haya en la cima de la pila
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: pos_variable: la posicion de la variable local en la pila
+ * @param: es_referencia: un flag que determina si la parte derecha de la asignacion es una direccion (TRUE) o es un valor (FALSE)
+ */
+void asignar_local(FILE* fpasm, int pos_variable, int es_referencia);
 
 /**
  * @brief: escribe el codigo nasm para realizar la suma de los dos operandos que se deben encontrar en la cima de la pila

@@ -5,6 +5,7 @@
 typedef struct _TablaSimbolos TablaSimbolos;
 
 
+int printTablaLocal(FILE* fp);
 int printTablaGlobal(FILE* fp);
 AMBITO getAmbito();
 STATUS setAmbito(AMBITO amb);

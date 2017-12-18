@@ -80,7 +80,6 @@
 %token TOK_MAYOR
 
 %token <atributos> TOK_IDENTIFICADOR
-
 %token <atributos> TOK_CONSTANTE_ENTERA
 %token <atributos> TOK_TRUE
 %token <atributos> TOK_FALSE
@@ -134,7 +133,9 @@
 %type <atributos> if_exp_sentencias
 %type <atributos> while
 %type <atributos> while_exp
-
+%type <atributos> fn_declaration
+%type <atributos> fn_name
+%type <atributos> idf_llamada_fn
 
 
 %%
@@ -285,10 +286,14 @@ funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
 		if(info == NULL){
 			return yyerror("FATAL ERROR: encontrar el identificador de una funcion!!");
 		}
-		if(num_retornos == 0)
+		info->n_param = num_parametros_actual;
+		info->n_locales = num_variables_local_actual;
+		if(num_retornos == 0){
 			fprintf(stderr, "\nWARNING: no hay retorno de funcion %s\n", $1.lexema);
+			escribir_fin_funcion(output);
+		}
 		//info->n_param = num_parametros_actual;
-		escribir_fin_funcion(output);
+		num_retornos = 0;
 		fprintf(output, ";R22:\t<funcion> ::= funcion <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion sentencias }\n");
 }
 
@@ -302,7 +307,8 @@ fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTES
 	//TODO generar codigo comienzo funcion
 	escribir_principio_funcion(output, info->lexema);
 	declarar_locales(output, num_variables_local_actual);
-	$$.lexema = $1.lexema;
+	printf("simbolo encontrado: %s\nn_param: %d\nn_local: %d\n", info->lexema, info->n_param, info->n_locales);
+	strcpy($$.lexema, $1.lexema);
 }
 
 fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR {
@@ -315,9 +321,10 @@ fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR {
 	//README segun las transparencias: en un principio la informacion disponible ahora mismo del id de la funcion es solo el tipo del retorno.
 	//			mas adelante se completara esta informacion
 	insertar($3.lexema, FUNCION, tipo_actual, ESCALAR, 1, 0, 0, 0, 0);
-	setAmbito(LOCAL);
+	//README importante: si insertas un funcion esta es automaticamente insertada en el ambito global y luego en el local!! ademas te deja el ambito a LOCAL
+	//setAmbito(LOCAL);
 	//antes hemos insertado en el ambito global pero tambien hay que insertar en el ambito local el id de la funcion
-	insertar($3.lexema, FUNCION, tipo_actual, ESCALAR, 1, 0, 0, 0, 0);
+	//insertar($3.lexema, FUNCION, tipo_actual, ESCALAR, 1, 0, 0, 0, 0);
 	//seteamos las variables que llevan la cuenta de numeros y posiciones variables locales y parametros
 	num_variables_local_actual = 0;
 	pos_variable_local_actual = 1;
@@ -326,7 +333,7 @@ fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR {
 	num_retornos = 0;
 	clase_actual = ESCALAR;
 
-	$$.lexema = $3.lexema;
+	strcpy($$.lexema, $3.lexema);
 }
 
 
@@ -359,7 +366,7 @@ parametro_funcion: tipo idpf {fprintf(output, ";R:27\t<parametro_funcion> ::= <t
 //regla para declaracion de parametros de funcion
 idpf: TOK_IDENTIFICADOR {
 	INFO_SIMBOLO * info;
-	info = buscar($1.lexema)
+	info = buscar($1.lexema);
 	if (info != NULL){
 		return yyerror("error semantico: identificador ya utilizado");
 	}
@@ -456,8 +463,13 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
 				return yyerror("error semantico: asignacion de clases incompatibles");
 			} else if(info->tipo != $3.tipo){
 				return yyerror("error semantico: asignacion de tipos incompatibles");
+			} else if(info->categoria == PARAMETRO){
+				return yyerror("error semantico: asignacion de a un parametro prohibida");
+			} else if (getAmbito() == GLOBAL){
+				asignar(output, $1.lexema, $3.es_direccion);
+			} else {//estamos asignando una variable local
+				asignar_local(output, info->pos_local, $3.es_direccion);
 			}
-			asignar(output, $1.lexema, $3.es_direccion);
 			fprintf(output, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");
 		}
 		| elemento_vector TOK_ASIGNACION exp {
@@ -588,7 +600,11 @@ escritura: TOK_PRINTF exp {
 /*
 	REGLA 61
 */
-retorno_funcion: TOK_RETURN exp {fprintf(output, ";R61:\t<retorno_funcion> ::= return <exp>\n");}
+retorno_funcion: TOK_RETURN exp {
+		fprintf(output, ";R61:\t<retorno_funcion> ::= return <exp>\n");
+		num_retornos = 1;
+		escribir_fin_funcion(output);
+	}
 
 
 
@@ -679,14 +695,18 @@ exp: exp TOK_MAS exp  {
 		}
 		$$.tipo = info->tipo;
 		$$.es_direccion = TRUE;
-		if(getAmbito()== GLOBAL){
+		if(getAmbito()== GLOBAL) {//si no estamos en una llamada a funcion y el ambito es global
 			escribir_operando(output, $1.lexema, TRUE);
-		} else{
-			if(info->categoria == VARIABLE){//caso de variable local
+		} else {
+			if(info->categoria == VARIABLE){//si no estamos en una llamada a funcion pero la variable es local
 				escribir_operando_local(output, info->pos_local);
-			} else {//caso de parametro
+			} else {//si no estamos en una llamada a funcion pero la variable es un parametro
 				escribir_operando_parametro(output, num_parametros_actual, info->pos_param);
 			}
+		}
+		if(en_exp_list){
+			$$.es_direccion = FALSE;
+			escribir_contenido_del_top(output);
 		}
 		fprintf(output, ";R80:\t<exp> ::= <identificador>\n");
 		}
@@ -708,11 +728,19 @@ exp: exp TOK_MAS exp  {
 	| elemento_vector {
 		//TODO comprobar si estamos en lista de expresiones (llamada a funcion) o no
 		$$.tipo = $1.tipo;
-		$$.es_direccion = $1.es_direccion;
+		if (en_exp_list){//si estamos en la llamada a una funcion
+			//README hay que indicar que ahora lo que hay en la cima de la pila no es una direccion
+			$$.es_direccion = FALSE;
+			escribir_contenido_del_top(output);
+		} else {
+			$$.es_direccion = $1.es_direccion;
+		}
 		fprintf(output, ";R85:\t<exp> ::= <elemento_vector>\n");
 		}
 	| idf_llamada_fn TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {
 		INFO_SIMBOLO* info = buscar($1.lexema);
+		printf("simbolo encontrado: %s\nn_param: %d\nn_local: %d\n", info->lexema, info->n_param, info->n_locales);
+		printf("numero esperado: %d\nnumero resultante: %d\n", info->n_param, $3.valor_entero);
 		if(info == NULL){
 			return yyerror("error semantico: funcion sin declarar");
 		} else if(info->categoria != FUNCION){
@@ -730,7 +758,7 @@ exp: exp TOK_MAS exp  {
 
 idf_llamada_fn: TOK_IDENTIFICADOR{
 	//TODO mirar tabla de simbolos el nombre del id (que sera la funcion)
-	$$.lexema = $1.lexema;
+	strcpy($$.lexema, $1.lexema);
 	en_exp_list = TRUE;
 }
 
