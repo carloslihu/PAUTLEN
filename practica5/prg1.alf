@@ -1,15 +1,8 @@
 main {
 	int z;
-	function int doble(int arg)
-	{
-		int auxArg;
-		printf 1;
-		auxArg = arg;
-		printf 2;
-		return 2 * arg ;
-		printf 3;
+	function int sum(int a; int b){
+		return a + b;
 	}
 	scanf z;
-	printf z;
-	printf doble(z);
+	printf sum(z, 6);
 }

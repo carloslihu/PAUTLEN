@@ -710,16 +710,21 @@ exp: exp TOK_MAS exp  {
 		$$.es_direccion = TRUE;
 		if(getAmbito()== GLOBAL) {//si no estamos en una llamada a funcion y el ambito es global
 			escribir_operando(output, $1.lexema, TRUE);
+			if(en_exp_list ){
+				$$.es_direccion = FALSE;
+				escribir_contenido_del_top(output);
+			}
 		} else {
 			if(info->categoria == VARIABLE){//si no estamos en una llamada a funcion pero la variable es local
 				escribir_operando_local(output, info->pos_local);
+				if(en_exp_list ){
+					$$.es_direccion = FALSE;
+					escribir_contenido_del_top(output);
+				}
 			} else {//si no estamos en una llamada a funcion pero la variable es un parametro
 				escribir_operando_parametro(output, num_parametros_actual, info->pos_param);
+				$$.es_direccion = FALSE;
 			}
-		}
-		if(en_exp_list){
-			$$.es_direccion = FALSE;
-			escribir_contenido_del_top(output);
 		}
 		fprintf(output, ";R80:\t<exp> ::= <identificador>\n");
 		}
@@ -799,8 +804,12 @@ lista_expresiones: exp resto_lista_expresiones {
 /*
 	REGLAS 91 92
 */
-resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones {fprintf(output, ";R91:\t<resto_lista_expresiones> ::= ,<exp> <resto_lista_expresiones>\n");}
-	| {fprintf(output, ";R92:\t<resto_lista_expresiones> ::=\n");}
+resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones {
+		$$.valor_entero = 1 + $3.valor_entero;
+		fprintf(output, ";R91:\t<resto_lista_expresiones> ::= ,<exp> <resto_lista_expresiones>\n");}
+	| {
+		$$.valor_entero = 0;
+		fprintf(output, ";R92:\t<resto_lista_expresiones> ::=\n");}
 	;
 
 

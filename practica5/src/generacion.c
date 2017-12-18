@@ -101,6 +101,7 @@ void escribir_principio_funcion(FILE* fpasm, char* nombre) {
  * @param: fpams: el archivo donde se va a escribir
  */
 void escribir_fin_funcion(FILE* fpasm) {
+	fprintf( fpasm, "\tpop eax\n");
 	fprintf( fpasm, "\tmov esp, ebp\n");
 	fprintf( fpasm, "\tpop ebp\n");
 	fprintf( fpasm, "\tret\n");
