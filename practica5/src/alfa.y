@@ -701,14 +701,13 @@ exp: exp TOK_MAS exp  {
 		//TODO comprobar si estamos en lista de expresiones (llamada a funcion) o no
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
-			//SIGO POR AQUI
 			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 			return yyerror(str);
 		}
 		else if(info->categoria == FUNCION){
-			return yyerror("Asignacion incompatible");
+			return yyerror("Tipo incorrecto");
 		} else if(info->clase == VECTOR){
-			return yyerror("Asignacion incompatible");
+			return yyerror("Tipo incorrecto");
 		}
 		$$.tipo = info->tipo;
 		$$.es_direccion = TRUE;
@@ -767,7 +766,7 @@ exp: exp TOK_MAS exp  {
 			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 			return yyerror(str);
 		} else if(info->categoria != FUNCION){
-			return yyerror("Asignacion incompatible.");
+			return yyerror("Tipo Incorrecto");
 		} else if(info->n_param != $3.valor_entero){//README usamos valor entero en este caso para almacenar el numero de expresiones de lista_expresiones
 			return yyerror("Numero incorrecto de parametros en llamada a funcion.");
 		}
@@ -955,11 +954,11 @@ identificador: TOK_IDENTIFICADOR {
 		else{
 			if(amb == GLOBAL){
 				if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, -1, -1, -1, -1) == ERR)
-					return yyerror("acho que no inserta!\n");
+					return yyerror("Tabla de simbolos corrupta");
 			} else {
 				//tratamos de insertar una variable local
 				if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, num_variables_local_actual, pos_variable_local_actual, -1, -1) == ERR)
-					return yyerror("acho que no inserta!\n");
+					return yyerror("Tabla de simbolos corrupta");
 				//actualizamos las variables que llevan la cuenta de las posiciones y numeros de las variables locales
 				pos_variable_local_actual++;
 				num_variables_local_actual++;
