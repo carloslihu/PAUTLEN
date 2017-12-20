@@ -3,7 +3,7 @@ ODIR=obj
 SDIR=src
 CC=gcc
 CFLAGS= -g -Wall
-prg=prg2
+prg=prg1
 
 _FILES=tablaHash tablaSimbolos generacion y.tab
 
@@ -19,7 +19,7 @@ all:
 	mv *.h $(IDIR)
 	$(MAKE) alfa
 
-alfa: $(OBJ) $(ODIR)/main.o
+alfa: $(OBJ) $(ODIR)/alfa.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 asm:
@@ -33,11 +33,11 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 zip:
-
+	zip -r GomezJavier_LiCarlos_compilador.zip *
 
 .PHONY: clean
 
 clean:
 	-rm $(OBJ) $(IDIR)/y.tab.h 
-	-rm $(SDIR)/alfa.c $(SDIR)/lex.yy.c $(SDIR)/y.tab.c $(ODIR)/$(prg).o $(ODIR)/main.o
-	-rm y.output alfa $(prg) $(prg).asm
+	-rm $(SDIR)/lex.yy.c $(SDIR)/y.tab.c $(ODIR)/$(prg).o $(ODIR)/alfa.o
+	-rm y.output alfa $(prg) *.asm
