@@ -282,6 +282,12 @@ void asignar_vector(FILE * fpasm, int es_referencia) {
 	fprintf(fpasm, "\tmov dword [edx], eax\n");
 }
 
+/**
+ * @brief: escribe el codigo nasm para asignar a una variable local. En la cima de la pila debe estar la parte izquierda de la asignacion
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: pos_variable: es la posicion en la que fue declarada la variable local
+ * @param: es_referencia: un flag que determina si la parte derecha de la asignacion es una direccion (TRUE) o es un valor (FALSE)
+ */
 void asignar_local(FILE* fpasm, int pos_variable, int es_referencia){
 	int num = pos_variable*4;
 	fprintf(fpasm, "\tpop dword eax\n");
@@ -290,6 +296,13 @@ void asignar_local(FILE* fpasm, int pos_variable, int es_referencia){
 	fprintf(fpasm, "\tmov dword [ebp - %d], eax\n", num);
 }
 
+/**
+ * @brief: escribe el codigo nasm para asignar a un parametro. En la cima de la pila debe estar la parte izquierda de la asignacion
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: pos_param: es la posicion en la que fue declarado el parametro
+ * @param: num_param: es el numero total de parametros que tiene la funcion
+ * @param: es_referencia: un flag que determina si la parte derecha de la asignacion es una direccion (TRUE) o es un valor (FALSE)
+ */
 void asignar_parametro(FILE*fpasm, int pos_param, int num_param, int es_referencia){
 	fprintf(fpasm, "\tpop eax\n");
 	if(es_referencia)
@@ -408,8 +421,13 @@ void leer(FILE * fpasm, char * nombre, int tipo)
 	fprintf(fpasm, "\tadd esp, 4\n");
 }
 
+/**
+ * @brief: escribe el codigo nasm para realizar una llamada a la funcion de alfalib.o que lee de stdin y guarda la lectura en una variable local
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: tipo: es un flag que indica si el valor que se va a leer es de tipo entero (ENTERO) o booleano (BOOLEANO)
+ * @param: pos_variable: es la posicion en la que fue declarada la variable local
+ */
 void leer_local(FILE* fpasm, int tipo, int pos_variable){
-	//README debe tener en el tope de la pila la direccion a leer : ebp - %d
 	fprintf(fpasm, "\tlea eax, [ebp-%d]\n", 4*pos_variable);
 	fprintf(fpasm, "\tpush dword eax\n");
 	if(tipo == ENTERO)
@@ -419,6 +437,13 @@ void leer_local(FILE* fpasm, int tipo, int pos_variable){
 	fprintf(fpasm,"\tadd esp, 4\n");
 }
 
+/**
+ * @brief: escribe el codigo nasm para realizar una llamada a la funcion de alfalib.o que lee de stdin y guarda la lectura en un parametro
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: tipo: es un flag que indica si el valor que se va a leer es de tipo entero (ENTERO) o booleano (BOOLEANO)
+ * @param: pos_variable: es la posicion en la que fue declarado el parametro
+ * @param: num_param: es el numero de parametros en total que tiene la funcion
+ */
 void leer_parametro(FILE* fpasm, int tipo, int pos_param, int num_param){
 	fprintf(fpasm, "\tlea eax, [ebp+%d]\n", 4+4*(num_param-pos_param));
 	fprintf(fpasm, "\tpush dword eax\n");
@@ -753,6 +778,11 @@ void escribir_end_else(FILE * fpasm, int cuantos_if) {
 	fprintf(fpasm, "end_else_%d:\n", cuantos_if);
 }
 
+/**
+ * @brief: escribe el codigo nasm para la comprobacion del while
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia: un flag que determina si lo que hay en la cima de la pila (boolean de la condicion) es una direccion o un valor
+ */
 void escribir_condicion_while(FILE* fpasm, int es_referencia, int cuantos) {
 	fprintf(fpasm, "\tpop eax\n");
 	if (es_referencia)
@@ -761,10 +791,18 @@ void escribir_condicion_while(FILE* fpasm, int es_referencia, int cuantos) {
 	fprintf(fpasm, "\tje near end_while_%d\n", cuantos);
 }
 
+/**
+ * @brief: escribe el codigo nasm del comienzo del while (el salto y la etiqueta)
+ * @param: fpams: el archivo donde se va a escribir
+ */
 void escribir_inicio_while(FILE* fpasm, int cuantos) {
 	fprintf(fpasm, "start_while_%d:\n", cuantos);
 }
 
+/**
+ * @brief: escribe el codigo nasm del final del while (el salto y la etiqueta)
+ * @param: fpams: el archivo donde se va a escribir
+ */
 void escribir_fin_while(FILE* fpasm, int cuantos) {
 	fprintf(fpasm, "\tjmp near start_while_%d\n", cuantos);
 	fprintf(fpasm, "end_while_%d:\n", cuantos);

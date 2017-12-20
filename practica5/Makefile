@@ -23,8 +23,8 @@ alfa: $(OBJ) $(ODIR)/main.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 asm:
-	valgrind --leak-check=full --show-leak-kinds=all ./alfa $(prg).alf $(prg).asm
-	#./alfa $(prg).alf $(prg).asm
+	#valgrind --leak-check=full --show-leak-kinds=all ./alfa $(prg).alf $(prg).asm
+	./alfa $(prg).alf $(prg).asm
 	nasm -felf32 $(prg).asm
 	mv $(prg).o $(ODIR)/$(prg).o
 	gcc -m32 -o $(prg) $(ODIR)/$(prg).o $(ODIR)/alfalib.o

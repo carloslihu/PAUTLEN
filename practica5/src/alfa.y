@@ -2,12 +2,9 @@
 #define ERROR_SEMANTICO "error semantico\n"
 #define MAX_TAM_VECTOR 64
 #include <stdio.h>
-	/*#include "tokens.h"*/
 #include "../includes/alfa.h"
 #include "../includes/y.tab.h"
-//#include "../includes/generacion.h"
 
-	//extern tipo_atributos yylval;
 	extern int yylex();
 	extern FILE* output;
 	extern int fil;
@@ -16,17 +13,15 @@
 
 	int tipo_actual;//para las declaraciones
 	int tipo_funcion_actual;//para el retorno de las funciones
-	int clase_actual;
-	int tam_actual;//README esta variable global la uso para poder heredar el tamanio del vector en las declaraciones
-	int cuantos = 0;
+	int clase_actual;//para las declaraciones
+	int tam_actual;//esta variable global la uso para poder heredar el tamanio del vector en las declaraciones
+	int cuantos = 0;//esta variable es un contador para generar saltos unicos
 	int en_exp_list = FALSE;//esta variable es un flag que indica si la compilacion se encuentra en una lista de expresiones (llamada a funcion)
-	int pos_parametro_actual = 0;
-	int num_parametros_actual = 0;
-	int pos_variable_local_actual = 1;//README este es 1 o deberia ser 0 y la otra global de posiciones deberia ser 1 ??? ver generacion codigo t 81
-	int num_variables_local_actual = 0;
-	int num_retornos = 0;
-	/*int cuantos_bloque = 0;*/
-	//TODO quiza crear una variable global que sea un flag para indicar si estamos en ambito global o local (?)
+	int pos_parametro_actual = 0;//variable global usada para heredar posiciones de parametro en declaraciones de funcion
+	int num_parametros_actual = 0;//variable global usada para heredar numero de parametros en declaracionas de funcion
+	int pos_variable_local_actual = 1;//variable global usada para heredar numero de variables locales de una funcion
+	int num_variables_local_actual = 0;//variable global usada para heredar la posicion de una variable local dentro de una funcion
+	int num_retornos = 0;//flag para detectar si una funcion le falta la sentencia de retorno
 
 	char str[200];//variable para impresion de errores
 
@@ -204,7 +199,7 @@ clase: clase_escalar {
 	}
 	| clase_vector {
 		if(getAmbito() == LOCAL){
-			return yyerror("Variable local de tipo no escalar.");
+			return yyerror("No estan permitidaslas variables locales de tipo no escalar.");
 		}
 		clase_actual = VECTOR;
 		fprintf(output, ";R7:\t<clase> ::= <clase_vector>\n");
@@ -245,10 +240,9 @@ tipo: TOK_INT {
 	REGLA 15
 */
 clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO {
-		//README, el tipo del vector se guarda en la variable global tipo_actual al reducir la regla "tipo" que es $2 en este caso
+		//el tipo del vector se guarda en la variable global tipo_actual al reducir la regla "tipo" que es $2 en este caso
 		//		por hacer analogía a como lo manejamos en clase_escalar, no hacemos nada con "tipo", pues ya haremos uso de tipo_actual al insertar en la tabla de simbolos
 		if($4.valor_entero > MAX_TAM_VECTOR || $4.valor_entero <= 0){
-			//TODO <nombre_vector>?
 			return yyerror("El tamanyo del vector excede los limites permitidos (1,64).");
 		}
 		tam_actual = $4.valor_entero;
@@ -287,8 +281,7 @@ funciones: funcion funciones {fprintf(output, ";R:20\t<funciones> ::= <funcion> 
 */
 funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
 		INFO_SIMBOLO *info;
-		setAmbito(GLOBAL);
-		//la tabla de simbolos estara en el ambito global
+		setAmbito(GLOBAL);//la tabla de simbolos estara en el ambito global
 		info = buscar($1.lexema);
 		if(info == NULL){
 			return yyerror("Tabla de simbolos corrupta.");
@@ -296,13 +289,9 @@ funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
 		info->n_param = num_parametros_actual;
 		info->n_locales = num_variables_local_actual;
 		if(num_retornos == 0){
-			//fprintf(stderr, "\nWARNING: no hay retorno de funcion %s\n", $1.lexema);
 			sprintf(str, "Funcion %s sin sentencia de retorno.", $1.lexema);
 			return yyerror(str);
-			//README preguntar si puede haber funciones sin retorno
-			//escribir_fin_funcion(output);
 		}
-		//info->n_param = num_parametros_actual;
 		num_retornos = 0;
 		fprintf(output, ";R22:\t<funcion> ::= funcion <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion sentencias }\n");
 }
@@ -317,7 +306,6 @@ fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTES
 	info->n_locales = num_variables_local_actual;
 	escribir_principio_funcion(output, info->lexema);
 	declarar_locales(output, num_variables_local_actual);
-	printf("simbolo encontrado: %s\nn_param: %d\nn_local: %d\n", info->lexema, info->n_param, info->n_locales);
 	strcpy($$.lexema, $1.lexema);
 }
 
@@ -327,14 +315,12 @@ fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR {
 	if(info != NULL){
 		return yyerror("Declaracion duplicada.");
 	}
-	//README asumo que la clase de la funcion es siempre escalar
-	//README segun las transparencias: en un principio la informacion disponible ahora mismo del id de la funcion es solo el tipo del retorno.
+	//segun las transparencias: en un principio la informacion disponible ahora mismo del id de la funcion es solo el tipo del retorno.
 	//			mas adelante se completara esta informacion
 	insertar($3.lexema, FUNCION, tipo_actual, ESCALAR, 1, 0, 0, 0, 0);
-	//README importante: si insertas un funcion esta es automaticamente insertada en el ambito global y luego en el local!! ademas te deja el ambito a LOCAL
+	//IMPORTANTE: si insertas una funcion esta es automaticamente insertada en el ambito global y luego en el local!! ademas te deja el ambito a LOCAL
+	//ademas, si insertas una funcion, primero lo hace en el ambito GLOBAL y luego en el LOCAL
 	//setAmbito(LOCAL);
-	//antes hemos insertado en el ambito global pero tambien hay que insertar en el ambito local el id de la funcion
-	//insertar($3.lexema, FUNCION, tipo_actual, ESCALAR, 1, 0, 0, 0, 0);
 	//seteamos las variables que llevan la cuenta de numeros y posiciones variables locales y parametros
 	num_variables_local_actual = 0;
 	pos_variable_local_actual = 1;
@@ -374,16 +360,17 @@ resto_parametros_funcion: TOK_PUNTOYCOMA parametro_funcion resto_parametros_func
 */
 parametro_funcion: tipo idpf {fprintf(output, ";R:27\t<parametro_funcion> ::= <tipo> <identificador>\n");}
 
-//regla para declaracion de parametros de funcion
+/*
+	regla para declaracion de parametros de funcion
+*/
 idpf: TOK_IDENTIFICADOR {
 	INFO_SIMBOLO * info;
 	info = buscar($1.lexema);
 	if (info != NULL){
 		return yyerror("Declaracion duplicada.");
 	}
-	
-	//README la clase de un parametro puede ser vector? en principio voy a asumir que no
-	//README realmente en esta insercion, el num_parametros_actual no hace falta insertarlo (porque es info para la funcion)
+	//realmente en esta insercion, el num_parametros_actual no hace falta insertarlo (porque es info para la funcion)
+	//num_parametros_actual podria ser 1
 	if(insertar($1.lexema, PARAMETRO, tipo_actual, ESCALAR, 1, -1, -1, num_parametros_actual, pos_parametro_actual) == ERR)
 		return yyerror("Tabla de simbolos corrupta.");
 	num_parametros_actual++;
@@ -395,23 +382,9 @@ idpf: TOK_IDENTIFICADOR {
 /*
 	REGLAS 28 29
 */
-
 declaraciones_funcion: declaraciones {fprintf(output, ";R28:\t<declaraciones_funcion> ::= <declaraciones>\n");}
 	| {fprintf(output, ";R29:\t<declaraciones_funcion> ::= \n");}
 	;
-
-
-/*
-declaraciones_funcion: declaracion_funcion declaraciones_funcion
-	|
-	;
-
-declaracion_funcion: tipo resto_declaracion_funcion TOK_PUNTOYCOMA
-
-resto_declaracion_funcion: TOK_IDENTIFICADOR TOK_COMA resto_declaracion_funcion
-	|
-	;
-*/
 
 /*
 	REGLAS 30 31
@@ -449,11 +422,9 @@ sentencia_simple: asignacion {fprintf(output, ";R34:\t<sentencia_simple> ::= <as
 	REGLAS 40 41
 */
 bloque: condicional {
-		//TODO escribir final del bloque (?)
 		fprintf(output, ";R40:\t<bloque> ::= <condicional>\n");
 		}
 	| bucle {
-		//TODO escribir final del bloque (?)
 		fprintf(output, ";R41:\t<bloque> ::= <bucle>\n");
 		}
 	;
@@ -469,16 +440,15 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
 			if(info == NULL){
 				sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 				return yyerror(str);
-			} else if(info->categoria == FUNCION){
-				return yyerror("Asignacion incompatible");
-			} else if(info->clase == VECTOR){
-				return yyerror("Asignacion incompatible");
-			} else if(info->tipo != $3.tipo){
-				return yyerror("Asignacion incompatible");
-			} else if(info->categoria == PARAMETRO){
-				//return yyerror("error semantico: asignacion de a un parametro prohibida");//README preguntar al profe si puedes hacer una asignacion a un parametro
+			} else if(info->categoria == FUNCION){//comprobamos que la parte izda de la asignacion no es una funcion
+				return yyerror("Asignacion incompatible a funcion");
+			} else if(info->clase == VECTOR){//comprobamos que no asignamos un vector a pelo (sin indexar)
+				return yyerror("Asignacion incompatible a vector");
+			} else if(info->tipo != $3.tipo){//comprobamos igualdad de tipos entre las dos partes
+				return yyerror("Asignacion de tipos incompatibles");
+			} else if(info->categoria == PARAMETRO){//comprobamos si estamos haciendo una asignacion a un parametro
 				asignar_parametro(output, info->pos_param, num_parametros_actual, $3.es_direccion);
-			} else if (getAmbito() == GLOBAL){
+			} else if (getAmbito() == GLOBAL){//comprobamos si estamos haciendo una asignacion a una variable global
 				asignar(output, $1.lexema, $3.es_direccion);
 			} else {//estamos asignando una variable local
 				asignar_local(output, info->pos_local, $3.es_direccion);
@@ -487,15 +457,14 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
 		}
 		| elemento_vector TOK_ASIGNACION exp {
 			INFO_SIMBOLO* info = buscar($1.lexema);
-			printf("tipo izda: %d\ntipo dcha; %d\n",info->tipo, $3.tipo);
 			if(info == NULL){
 				return yyerror("Tabla de simbolos corrupta.");
-			} else if(info->categoria == FUNCION){
-				return yyerror("Asignacion incompatible");
-			} else if(info->clase == ESCALAR){
-				return yyerror("Asignacion incompatible");
-			} else if(info->tipo != $3.tipo){
-				return yyerror("Asignacion incompatible");
+			} else if(info->categoria == FUNCION){//comprobamos que la parte izda de la asignacion no es una funcion
+				return yyerror("Asignacion incompatible a funcion");
+			} else if(info->clase == ESCALAR){//comprobacion redundante de la clase
+				return yyerror("Asignacion incompatible a escalar");
+			} else if(info->tipo != $3.tipo){//comprobamos igualdad de tipos entre las dos partes
+				return yyerror("Asignacion de tipos incompatibles");
 			}
 			asignar_vector(output, $3.es_direccion);
 			fprintf(output, ";R43.2:\t<asignacion> ::= <elemento_vector> = <exp>\n");
@@ -508,9 +477,6 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
 	REGLA 48
 */
 elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO {
-		//cuando nos encontramos con un elemento vector, tenemos que comprobar que exp
-		//entra dentro del rango del vector. En caso contrario, saltar a la gesiton del
-		//error. Por ello, printeamos el siguiente codigo ensamblador
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if($3.tipo != ENTERO){
 			return yyerror("El indice de una operacion de indexacion tiene que ser de tipo entero");
@@ -519,12 +485,15 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
 			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 			return yyerror(str);
 		} else if(getAmbito() == LOCAL){
-			return yyerror("Variable local de tipo no escalar.");
+			return yyerror("No estan permitidaslas variables locales de tipo no escalar.");
 		} else if(info->clase == ESCALAR){
 			return yyerror("Intento de indexacion de una variable que no es de tipo vector.");
 		} else {
+			//cuando nos encontramos con un elemento vector, tenemos que comprobar que exp
+			//entra dentro del rango del vector. En caso contrario, saltar a la gesiton del
+			//error. Por ello, printeamos el siguiente codigo ensamblador
 			escribir_elemento_vector(output, $1.lexema, $3.es_direccion, info->tam-1);//el -1 es porque el array va desde 0 hasta tamanio-1. En la generacion de codigo no se gestiona esa logica
-			$$.es_direccion = TRUE;
+			$$.es_direccion = TRUE;//es direccion porque tratamos a el elemento vector como un TOK_ID en tanto a que es una direccion de memoria
 		}
 		strcpy($$.lexema, $1.lexema);
 		$$.tipo = info->tipo;
@@ -547,14 +516,13 @@ condicional : if_exp_sentencias TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVE
 		}
 
 if_exp: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
-		//TODO transparencias en torno a la 59
+		if($3.tipo != BOOLEANO)
+			return yyerror("Condicional con condicion de tipo int.");
+		$$.etiqueta = cuantos++;
 		//comprobamos que sea distinto de cero.
 		//si no se cumple, saltamos al final del if
 		//ejecutamos instrucciones de dentro del if
 		//final del if
-		if($3.tipo != BOOLEANO)
-			return yyerror("Condicional con condicion de tipo int.");
-		$$.etiqueta = cuantos++;
 		escribir_if(output, $3.es_direccion, $$.etiqueta);
 		fprintf(output, ";R50:\t<if_exp> ::= if ( <exp> ) { \n");
 		}
@@ -573,7 +541,6 @@ if_exp_sentencias: if_exp sentencias TOK_LLAVEDERECHA {
 while: TOK_WHILE TOK_PARENTESISIZQUIERDO{
 		$$.etiqueta = cuantos++;
 		escribir_inicio_while(output, $$.etiqueta);
-		//TODO generacion codigo
 	}
 
 while_exp: while exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
@@ -598,10 +565,8 @@ lectura: TOK_SCANF TOK_IDENTIFICADOR {
 		sprintf(str,"Acceso a variable no declarada (%s)",$2.lexema);
 		return yyerror(str);
 	} else if(aux->clase != ESCALAR){
-		//TODO que imprimir
 		return yyerror("Scanf sobre vector");
 	} else if (aux->categoria == FUNCION){
-		//TODO que imprimir
 		return yyerror("Scanf sobre funcion");
 	}
 	if(getAmbito()==LOCAL && (aux->pos_local != -1 || aux->pos_param != -1)){//esta comprobacion sirve para ver si es parametro o var local. esos != -1 son porque al insertar una
@@ -609,7 +574,6 @@ lectura: TOK_SCANF TOK_IDENTIFICADOR {
 		if(aux->categoria == PARAMETRO){
 			leer_parametro(output, $2.tipo, aux->pos_param, num_parametros_actual);
 		} else {
-			printf("pos_local: %d\n",aux->pos_local);
 			leer_local(output, $2.tipo, aux->pos_local);
 		}
 	} else {
@@ -635,7 +599,6 @@ escritura: TOK_PRINTF exp {
 /*
 	REGLA 61
 */
-	//TODO VAMOS POR AQUI
 retorno_funcion: TOK_RETURN exp {
 		fprintf(output, ";R61:\t<retorno_funcion> ::= return <exp>\n");
 		if($2.tipo != tipo_funcion_actual)
@@ -725,36 +688,36 @@ exp: exp TOK_MAS exp  {
 		fprintf(output, ";R79:\t<exp> ::= ! <exp>\n");
 		}
 	| TOK_IDENTIFICADOR {
-		//TODO comprobar si estamos en lista de expresiones (llamada a funcion) o no
 		INFO_SIMBOLO* info = buscar($1.lexema);
+
 		if(info == NULL){
 			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 			return yyerror(str);
-		}
-		else if(info->categoria == FUNCION){
-			return yyerror("Tipo incorrecto");
+		} else if(info->categoria == FUNCION){
+			return yyerror("Identificador de categoria incorrecta");
 		} else if(info->clase == VECTOR){
-			return yyerror("Clase incorrecta");
+			return yyerror("Identificador de clase incorrecta");
 		}
+
 		$$.tipo = info->tipo;
 		$$.es_direccion = TRUE;
 
-		if(getAmbito()== GLOBAL) {//si no estamos en una llamada a funcion y el ambito es global
+		if(getAmbito()== GLOBAL) {//si el ambito es global
 			escribir_operando(output, $1.lexema, TRUE);
-			if(en_exp_list ){
+			if(en_exp_list ){//si estamos en una llamada a funcion
 				$$.es_direccion = FALSE;
 				escribir_contenido_del_top(output);
 			}
 		} else {
-			if(info->categoria == VARIABLE){//si no estamos en una llamada a funcion pero la variable es local
+			if(info->categoria == VARIABLE){//si la variable es local
 				escribir_operando_local(output, info->pos_local);
-				if(en_exp_list ){
+				if(en_exp_list ){//si estamos en una llamada a funcion
 					$$.es_direccion = FALSE;
 					escribir_contenido_del_top(output);
 				}
-			} else {//si no estamos en una llamada a funcion pero la variable es un parametro
+			} else {//si la variable es un parametro
 				escribir_operando_parametro(output, num_parametros_actual, info->pos_param);
-				if(en_exp_list ){
+				if(en_exp_list ){//si estamos en una llamada a funcion
 					$$.es_direccion = FALSE;
 					escribir_contenido_del_top(output);
 				}
@@ -778,10 +741,9 @@ exp: exp TOK_MAS exp  {
 		fprintf(output, ";R83:\t<exp> ::= ( <comparacion> )\n");
 		}
 	| elemento_vector {
-		//TODO comprobar si estamos en lista de expresiones (llamada a funcion) o no
 		$$.tipo = $1.tipo;
 		if (en_exp_list){//si estamos en la llamada a una funcion
-			//README hay que indicar que ahora lo que hay en la cima de la pila no es una direccion
+			//lo que hay en la cima de la pila no es una direccion
 			$$.es_direccion = FALSE;
 			escribir_contenido_del_top(output);
 		} else {
@@ -790,13 +752,14 @@ exp: exp TOK_MAS exp  {
 		fprintf(output, ";R85:\t<exp> ::= <elemento_vector>\n");
 		}
 	| idf_llamada_fn TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {
+		//en lista_expresiones.valor_entero  tenemos calculado el  numero de expresiones de la lista (numero de argumentos en la llamada a la funcion)
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
 			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 			return yyerror(str);
 		} else if(info->categoria != FUNCION){
-			return yyerror("Tipo Incorrecto");
-		} else if(info->n_param != $3.valor_entero){//README usamos valor entero en este caso para almacenar el numero de expresiones de lista_expresiones
+			return yyerror("El identificador de llamada no es una funcion");
+		} else if(info->n_param != $3.valor_entero){//usamos valor entero en este caso para almacenar el numero de expresiones de lista_expresiones
 			return yyerror("Numero incorrecto de parametros en llamada a funcion.");
 		}
 		escribir_llamada_funcion(output, info->lexema, info->n_param);
@@ -808,10 +771,15 @@ exp: exp TOK_MAS exp  {
 	;
 
 idf_llamada_fn: TOK_IDENTIFICADOR{
+	INFO_SIMBOLO *info;
 	if(en_exp_list == TRUE){
 		return yyerror("No esta permitido el uso de llamadas a funciones como parametros de otras funciones");
 	}
-	//TODO mirar tabla de simbolos el nombre del id (que sera la funcion)
+	info = buscar($1.lexema);
+	if(info == NULL)
+		return yyerror("Llamada a funcion no declarada");
+	else if(info->categoria != FUNCION)
+		return yyerror("El identificador de llamada no es una funcion");
 	strcpy($$.lexema, $1.lexema);
 	en_exp_list = TRUE;
 }
@@ -821,8 +789,6 @@ idf_llamada_fn: TOK_IDENTIFICADOR{
 /*
 	REGLAS 89 90
 */
-	//README tengo que heredar de alguna forma la informacion de la funcion para comprobar los tipos de los argumentos?
-	//TODO solo hace falta ir haciendo push de los valores de los argumentos
 lista_expresiones: exp resto_lista_expresiones {
 		$$.valor_entero = 1 + $2.valor_entero;
 		fprintf(output, ";R89:\t<lista_expresiones> ::= <exp> <resto_lista_expresiones>\n");
@@ -964,7 +930,7 @@ constante_entera: TOK_CONSTANTE_ENTERA {
 		$$.tipo = ENTERO;
 		$$.es_direccion = FALSE;
 		$$.valor_entero = $1.valor_entero;
-		escribir_operando(output, $1.lexema, 0);//README $1.lexema es un truco sucio para no jugar con memoria
+		escribir_operando(output, $1.lexema, 0);//en $1.lexema guardo la string del valor_entero 
 		fprintf(output, ";R104:\t<constante_entera> ::= TOK_CONSTANTE_ENTERA\n");
 	}
 
@@ -973,15 +939,15 @@ constante_entera: TOK_CONSTANTE_ENTERA {
 /*
 	REGLA 108
 */
-//README solo deberia llegarse a esta regla de identificador desde una declaracion, no desde una expresion.
+//solo deberia llegarse a esta regla de identificador desde una declaracion, no desde una expresion.
 identificador: TOK_IDENTIFICADOR {
 		AMBITO amb = getAmbito();
 		fprintf(output, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");
 		if(amb==LOCAL){
 			//tratamos de insertar una variable local
-			//actualizamos las variables que llevan la cuenta de las posiciones y numeros de las variables locales
 			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, num_variables_local_actual, pos_variable_local_actual, -1, -1) == ERR)
 				return yyerror("Declaracion duplicada.\n");
+			//actualizamos las variables que llevan la cuenta de las posiciones y numeros de las variables locales
 			pos_variable_local_actual++;
 			num_variables_local_actual++;
 		} else {

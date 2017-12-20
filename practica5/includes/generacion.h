@@ -108,13 +108,6 @@ void escribir_operando_local(FILE* fpasm, int pos_variable);
 void escribir_operando_parametro(FILE* fpasm, int num_param, int pos_param);
 
 /**
- * @brief: escribe en la pila el contenido de un operando (de una variable global)
- * @param: fpams: el archivo donde se va a escribir
- * @param: nombre: el nombre de la variable global
- */
-//void escribir_contenido_de_operando(FILE* fpasm, char* nombre):
-
-/**
  * @brief: escribe el codigo nasm para sacar del top de la pila una direccion y escribir en la pila el contenido de dicha direccion
  * @param: fpams: el archivo donde se va a escribir
  */
@@ -137,13 +130,20 @@ void asignar(FILE * fpasm, char * nombre, int es_referencia);
 void asignar_vector(FILE * fpasm, int es_referencia);
 
 /**
- * @brief: escribe el codigo nasm para asignar a una variable local aquello que haya en la cima de la pila
+ * @brief: escribe el codigo nasm para asignar a una variable local. En la cima de la pila debe estar la parte izquierda de la asignacion
  * @param: fpams: el archivo donde se va a escribir
- * @param: pos_variable: la posicion de la variable local en la pila
+ * @param: pos_variable: es la posicion en la que fue declarada la variable local
  * @param: es_referencia: un flag que determina si la parte derecha de la asignacion es una direccion (TRUE) o es un valor (FALSE)
  */
 void asignar_local(FILE* fpasm, int pos_variable, int es_referencia);
 
+/**
+ * @brief: escribe el codigo nasm para asignar a un parametro. En la cima de la pila debe estar la parte izquierda de la asignacion
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: pos_param: es la posicion en la que fue declarado el parametro
+ * @param: num_param: es el numero total de parametros que tiene la funcion
+ * @param: es_referencia: un flag que determina si la parte derecha de la asignacion es una direccion (TRUE) o es un valor (FALSE)
+ */
 void asignar_parametro(FILE*fpasm, int pos_param, int num_param, int es_referencia);
 
 /**
@@ -176,8 +176,21 @@ void no(FILE * fpasm, int es_referencia, int cuantos_no);//probar
  */
 void leer(FILE * fpasm, char * nombre, int tipo);
 
+/**
+ * @brief: escribe el codigo nasm para realizar una llamada a la funcion de alfalib.o que lee de stdin y guarda la lectura en una variable local
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: tipo: es un flag que indica si el valor que se va a leer es de tipo entero (ENTERO) o booleano (BOOLEANO)
+ * @param: pos_variable: es la posicion en la que fue declarada la variable local
+ */
 void leer_local(FILE* fpasm, int tipo, int pos_variable);
 
+/**
+ * @brief: escribe el codigo nasm para realizar una llamada a la funcion de alfalib.o que lee de stdin y guarda la lectura en un parametro
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: tipo: es un flag que indica si el valor que se va a leer es de tipo entero (ENTERO) o booleano (BOOLEANO)
+ * @param: pos_variable: es la posicion en la que fue declarado el parametro
+ * @param: num_param: es el numero de parametros en total que tiene la funcion
+ */
 void leer_parametro(FILE* fpasm, int tipo, int pos_param, int num_param);
 
 /**
@@ -302,8 +315,23 @@ void escribir_else(FILE* fpasm, int cuantos_if);
  */
 void escribir_end_else(FILE * fpasm, int cuantos_if);
 
+/**
+ * @brief: escribe el codigo nasm para la comprobacion del while
+ * @param: fpams: el archivo donde se va a escribir
+ * @param: es_referencia: un flag que determina si lo que hay en la cima de la pila (boolean de la condicion) es una direccion o un valor
+ */
 void escribir_condicion_while(FILE* fpasm, int es_referencia, int cuantos);
+
+/**
+ * @brief: escribe el codigo nasm del comienzo del while (el salto y la etiqueta)
+ * @param: fpams: el archivo donde se va a escribir
+ */
 void escribir_inicio_while(FILE* fpasm, int cuantos);
+
+/**
+ * @brief: escribe el codigo nasm del final del while (el salto y la etiqueta)
+ * @param: fpams: el archivo donde se va a escribir
+ */
 void escribir_fin_while(FILE* fpasm, int cuantos);
 
 

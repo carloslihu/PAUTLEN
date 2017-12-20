@@ -13,7 +13,7 @@ main{
 
 
 
-	//y = test(-1);
+	y = test(-1);
 	printf -y;
 	//	y = x;
 	z[0] = x[0];

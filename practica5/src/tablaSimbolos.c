@@ -11,7 +11,6 @@ TablaSimbolos * ts = NULL;
 
 int printTablaLocal(FILE* fp){
 	if(!ts || !ts->tablaSimbolosLocal || !fp){
-		fprintf(fp, "\n\nNO HAY TABLA LOCAL\n\n");
 		return 0;
 	}
 	return printTablaSimbolos(fp, ts->tablaSimbolosLocal);
