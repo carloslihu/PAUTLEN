@@ -33,11 +33,11 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 zip:
-
+	zip -r GomezJavier_LiCarlos_compilador.zip *
 
 .PHONY: clean
 
 clean:
 	-rm $(OBJ) $(IDIR)/y.tab.h 
 	-rm $(SDIR)/alfa.c $(SDIR)/lex.yy.c $(SDIR)/y.tab.c $(ODIR)/$(prg).o $(ODIR)/main.o
-	-rm y.output alfa $(prg) $(prg).asm
+	-rm y.output alfa $(prg) *.asm
