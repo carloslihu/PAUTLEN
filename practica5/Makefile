@@ -3,7 +3,7 @@ ODIR=obj
 SDIR=src
 CC=gcc
 CFLAGS= -g -Wall
-prg=prg2
+prg=prg1
 
 _FILES=tablaHash tablaSimbolos generacion y.tab
 
@@ -19,12 +19,12 @@ all:
 	mv *.h $(IDIR)
 	$(MAKE) alfa
 
-alfa: $(OBJ) $(ODIR)/main.o
+alfa: $(OBJ) $(ODIR)/alfa.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 asm:
-	valgrind --leak-check=full --show-leak-kinds=all ./alfa $(prg).alf $(prg).asm
-	#./alfa $(prg).alf $(prg).asm
+	#valgrind --leak-check=full --show-leak-kinds=all ./alfa $(prg).alf $(prg).asm
+	./alfa $(prg).alf $(prg).asm
 	nasm -felf32 $(prg).asm
 	mv $(prg).o $(ODIR)/$(prg).o
 	gcc -m32 -o $(prg) $(ODIR)/$(prg).o $(ODIR)/alfalib.o
@@ -39,5 +39,5 @@ zip:
 
 clean:
 	-rm $(OBJ) $(IDIR)/y.tab.h 
-	-rm $(SDIR)/alfa.c $(SDIR)/lex.yy.c $(SDIR)/y.tab.c $(ODIR)/$(prg).o $(ODIR)/main.o
+	-rm $(SDIR)/lex.yy.c $(SDIR)/y.tab.c $(ODIR)/$(prg).o $(ODIR)/alfa.o
 	-rm y.output alfa $(prg) *.asm
