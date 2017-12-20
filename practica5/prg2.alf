@@ -2,6 +2,8 @@ main {
 	int z;
 	function int f(int x){
 		int z;
+		z = 2;
+		printf z;
 		x = 3;
 		printf x;
 		scanf x;

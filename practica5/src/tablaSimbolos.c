@@ -147,7 +147,11 @@ void cerrarFuncion() {
 }
 
 void limpiarTablas() {
-	cerrarFuncion();
-	liberar_tabla(ts->tablaSimbolosGlobal);
-	ts->tablaSimbolosGlobal = NULL;
+	if(ts){
+		cerrarFuncion();
+		liberar_tabla(ts->tablaSimbolosGlobal);
+		ts->tablaSimbolosGlobal = NULL;
+		free(ts);
+		ts = NULL;
+	}
 }

@@ -14,7 +14,8 @@
 	extern int col;
 	extern int yyleng;
 
-	int tipo_actual;
+	int tipo_actual;//para las declaraciones
+	int tipo_funcion_actual;//para el retorno de las funciones
 	int clase_actual;
 	int tam_actual;//README esta variable global la uso para poder heredar el tamanio del vector en las declaraciones
 	int cuantos = 0;
@@ -202,6 +203,9 @@ clase: clase_escalar {
 		fprintf(output, ";R5:\t<clase> ::= <clase_escalar>\n");
 	}
 	| clase_vector {
+		if(getAmbito() == LOCAL){
+			return yyerror("Variable local de tipo no escalar.");
+		}
 		clase_actual = VECTOR;
 		fprintf(output, ";R7:\t<clase> ::= <clase_vector>\n");
 	}
@@ -245,7 +249,7 @@ clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETE
 		//		por hacer analogía a como lo manejamos en clase_escalar, no hacemos nada con "tipo", pues ya haremos uso de tipo_actual al insertar en la tabla de simbolos
 		if($4.valor_entero > MAX_TAM_VECTOR || $4.valor_entero <= 0){
 			//TODO <nombre_vector>?
-			return yyerror("El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).");
+			return yyerror("El tamanyo del vector excede los limites permitidos (1,64).");
 		}
 		tam_actual = $4.valor_entero;
 		fprintf(output, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");
@@ -337,6 +341,7 @@ fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR {
 	num_parametros_actual = 0;
 	pos_parametro_actual = 0;
 	num_retornos = 0;
+	tipo_funcion_actual = tipo_actual;
 	clase_actual = ESCALAR;
 
 	strcpy($$.lexema, $3.lexema);
@@ -482,6 +487,7 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
 		}
 		| elemento_vector TOK_ASIGNACION exp {
 			INFO_SIMBOLO* info = buscar($1.lexema);
+			printf("tipo izda: %d\ntipo dcha; %d\n",info->tipo, $3.tipo);
 			if(info == NULL){
 				return yyerror("Tabla de simbolos corrupta.");
 			} else if(info->categoria == FUNCION){
@@ -506,16 +512,22 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
 		//entra dentro del rango del vector. En caso contrario, saltar a la gesiton del
 		//error. Por ello, printeamos el siguiente codigo ensamblador
 		INFO_SIMBOLO* info = buscar($1.lexema);
+		if($3.tipo != ENTERO){
+			return yyerror("El indice de una operacion de indexacion tiene que ser de tipo entero");
+		}
 		if(info == NULL){
 			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 			return yyerror(str);
 		} else if(getAmbito() == LOCAL){
 			return yyerror("Variable local de tipo no escalar.");
+		} else if(info->clase == ESCALAR){
+			return yyerror("Intento de indexacion de una variable que no es de tipo vector.");
 		} else {
 			escribir_elemento_vector(output, $1.lexema, $3.es_direccion, info->tam-1);//el -1 es porque el array va desde 0 hasta tamanio-1. En la generacion de codigo no se gestiona esa logica
 			$$.es_direccion = TRUE;
 		}
 		strcpy($$.lexema, $1.lexema);
+		$$.tipo = info->tipo;
 		fprintf(output, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");
 		}
 
@@ -566,7 +578,7 @@ while: TOK_WHILE TOK_PARENTESISIZQUIERDO{
 
 while_exp: while exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
 		if($2.tipo != BOOLEANO){
-			return yyerror("Condicional con condicion de tipo int.");
+			return yyerror("Bucle con condicion de tipo int.");
 		}
 		$$.etiqueta = $1.etiqueta;
 		escribir_condicion_while(output, $2.es_direccion, $$.etiqueta);
@@ -626,6 +638,8 @@ escritura: TOK_PRINTF exp {
 	//TODO VAMOS POR AQUI
 retorno_funcion: TOK_RETURN exp {
 		fprintf(output, ";R61:\t<retorno_funcion> ::= return <exp>\n");
+		if($2.tipo != tipo_funcion_actual)
+			return yyerror("El tipo del retorno de la funcion no coincide con el tipo declarado.");
 		if(getAmbito() == GLOBAL)
 			return yyerror("Sentencia de retorno fuera del cuerpo de una funcion");
 		num_retornos = 1;
@@ -720,7 +734,7 @@ exp: exp TOK_MAS exp  {
 		else if(info->categoria == FUNCION){
 			return yyerror("Tipo incorrecto");
 		} else if(info->clase == VECTOR){
-			return yyerror("Tipo incorrecto");
+			return yyerror("Clase incorrecta");
 		}
 		$$.tipo = info->tipo;
 		$$.es_direccion = TRUE;
@@ -777,8 +791,6 @@ exp: exp TOK_MAS exp  {
 		}
 	| idf_llamada_fn TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {
 		INFO_SIMBOLO* info = buscar($1.lexema);
-		printf("simbolo encontrado: %s\nn_param: %d\nn_local: %d\n", info->lexema, info->n_param, info->n_locales);
-		printf("numero esperado: %d\nnumero resultante: %d\n", info->n_param, $3.valor_entero);
 		if(info == NULL){
 			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 			return yyerror(str);

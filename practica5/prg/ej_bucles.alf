@@ -12,6 +12,7 @@ main
     while ((i<y))
     {
         resultado = resultado + x;
+        i = i+1;
     }
     printf resultado;
 }

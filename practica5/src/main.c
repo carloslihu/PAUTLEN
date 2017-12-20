@@ -23,6 +23,9 @@ int main(int argc, char** argv){
   escribir_cabecera_bss(output);
   */
   yyparse();
+  fclose(yyin);
+  if(output != stdout)
+    fclose(output);
   /*
   if(retVal == 0) 
     printf("\nEXPRESION CORRECTA\n"); 

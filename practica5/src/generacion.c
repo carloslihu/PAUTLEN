@@ -767,7 +767,7 @@ void escribir_inicio_while(FILE* fpasm, int cuantos) {
 
 void escribir_fin_while(FILE* fpasm, int cuantos) {
 	fprintf(fpasm, "\tjmp near start_while_%d\n", cuantos);
-	fprintf(fpasm, "end_while_%d\n", cuantos);
+	fprintf(fpasm, "end_while_%d:\n", cuantos);
 }
 
 /**

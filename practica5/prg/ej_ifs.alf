@@ -11,22 +11,22 @@ main
 	{
 		if ((y>0))
 		{
-			printf cuadrante1;
+			printf 1;
 		}
 		else
 		{
-			printf cuadrante4;
+			printf 4;
 		}
 	}
 	else
 	{
 		if ((y>0))
 		{
-			printf cuadrante2;
+			printf 2;
 		}
 		else
 		{
-			printf cuadrante3;
+			printf 3;
 		}
 
 	}
