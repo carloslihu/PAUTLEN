@@ -31,12 +31,14 @@
 
 	int yyerror(char* s) {
 		//TODO liberar las tablas de simbolos en caso de error
+		
 		if (yylval.atributos.tipo != -1){
 			if(strcmp(s, "syntax error"))
 				fprintf(stderr,"****Error semantico en lin %d: %s\n",fil, s);
 			else
 				fprintf(stderr, "****Error sintactico en [lin %d col %d]\n", fil, col - yyleng);
 		}
+		limpiarTablas();
 		return -1;
 	}
 %}
@@ -148,6 +150,7 @@ programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones escritura1 funciones escritu
 	//TODO liberar las tablas de simbolos en caso de compilacion correcta
 		escribir_fin(output);
 		fprintf(output, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");
+		limpiarTablas();
 	}
 
 
@@ -593,7 +596,12 @@ lectura: TOK_SCANF TOK_IDENTIFICADOR {
 	}
 	if(getAmbito()==LOCAL && (aux->pos_local != -1 || aux->pos_param != -1)){//esta comprobacion sirve para ver si es parametro o var local. esos != -1 son porque al insertar una
 		//var global, metemos -1 en los campos que corresponderian a variables locales
-		leer_local_o_parametro(output, $2.tipo);
+		if(aux->categoria == PARAMETRO){
+			leer_parametro(output, $2.tipo, aux->pos_param, num_parametros_actual);
+		} else {
+			printf("pos_local: %d\n",aux->pos_local);
+			leer_local(output, $2.tipo, aux->pos_local);
+		}
 	} else {
 		leer(output, $2.lexema, $2.tipo);
 	}
@@ -623,6 +631,8 @@ retorno_funcion: TOK_RETURN exp {
 		if(getAmbito() == GLOBAL)
 			return yyerror("Sentencia de retorno fuera del cuerpo de una funcion");
 		num_retornos = 1;
+		if($2.es_direccion)
+			escribir_contenido_del_top(output);
 		escribir_fin_funcion(output);
 	}
 
@@ -706,17 +716,17 @@ exp: exp TOK_MAS exp  {
 		//TODO comprobar si estamos en lista de expresiones (llamada a funcion) o no
 		INFO_SIMBOLO* info = buscar($1.lexema);
 		if(info == NULL){
-			//SIGO POR AQUI
 			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 			return yyerror(str);
 		}
 		else if(info->categoria == FUNCION){
-			return yyerror("Asignacion incompatible");
+			return yyerror("Tipo incorrecto");
 		} else if(info->clase == VECTOR){
-			return yyerror("Asignacion incompatible");
+			return yyerror("Tipo incorrecto");
 		}
 		$$.tipo = info->tipo;
 		$$.es_direccion = TRUE;
+
 		if(getAmbito()== GLOBAL) {//si no estamos en una llamada a funcion y el ambito es global
 			escribir_operando(output, $1.lexema, TRUE);
 			if(en_exp_list ){
@@ -732,7 +742,10 @@ exp: exp TOK_MAS exp  {
 				}
 			} else {//si no estamos en una llamada a funcion pero la variable es un parametro
 				escribir_operando_parametro(output, num_parametros_actual, info->pos_param);
-				$$.es_direccion = FALSE;
+				if(en_exp_list ){
+					$$.es_direccion = FALSE;
+					escribir_contenido_del_top(output);
+				}
 			}
 		}
 		fprintf(output, ";R80:\t<exp> ::= <identificador>\n");
@@ -772,7 +785,7 @@ exp: exp TOK_MAS exp  {
 			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 			return yyerror(str);
 		} else if(info->categoria != FUNCION){
-			return yyerror("Asignacion incompatible.");
+			return yyerror("Tipo Incorrecto");
 		} else if(info->n_param != $3.valor_entero){//README usamos valor entero en este caso para almacenar el numero de expresiones de lista_expresiones
 			return yyerror("Numero incorrecto de parametros en llamada a funcion.");
 		}
@@ -952,20 +965,18 @@ constante_entera: TOK_CONSTANTE_ENTERA {
 */
 //README solo deberia llegarse a esta regla de identificador desde una declaracion, no desde una expresion.
 identificador: TOK_IDENTIFICADOR {
-		INFO_SIMBOLO * info;
 		AMBITO amb = getAmbito();
-		info = buscar($1.lexema);
 		fprintf(output, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");
-		if(amb == GLOBAL){
-			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, -1, -1, -1, -1) == ERR)
-				return yyerror("acho que no inserta!\n");
-		} else {
+		if(amb==LOCAL){
 			//tratamos de insertar una variable local
-			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, num_variables_local_actual, pos_variable_local_actual, -1, -1) == ERR)
-				return yyerror("acho que no inserta!\n");
 			//actualizamos las variables que llevan la cuenta de las posiciones y numeros de las variables locales
+			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, num_variables_local_actual, pos_variable_local_actual, -1, -1) == ERR)
+				return yyerror("Declaracion duplicada.\n");
 			pos_variable_local_actual++;
 			num_variables_local_actual++;
+		} else {
+			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, -1, -1, -1, -1) == ERR)
+				return yyerror("Declaracion duplicada.\n");
 		}
 	}
 

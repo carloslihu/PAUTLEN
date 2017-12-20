@@ -5,8 +5,9 @@ main {
 		x = 3;
 		printf x;
 		scanf x;
-		printf x
+		printf x;
 		scanf z;
+		printf 999;
 		printf z;
 		return x;
 	}

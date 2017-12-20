@@ -203,7 +203,8 @@ void escribir_elemento_vector(FILE* fpasm, char* nombre, int indice_es_direccion
  */
 void escribir_operando_local(FILE* fpasm, int pos_variable){
 	int num = 4*pos_variable;
-	fprintf(fpasm, "\tpush dword [ebp - %d]\n", num);
+	fprintf(fpasm, "\tlea eax, [ebp-%d]\n", num);
+	fprintf(fpasm, "\tpush dword eax\n");
 	//fprintf(fpasm, "\tpush dword [eax]\n");
 }
 
@@ -215,7 +216,8 @@ void escribir_operando_local(FILE* fpasm, int pos_variable){
  */
 void escribir_operando_parametro(FILE* fpasm, int num_param, int pos_param){
 	int num = 4 + 4*(num_param - pos_param);
-	fprintf(fpasm, "\tpush dword [ebp + %d]\n", num);
+	fprintf(fpasm, "\tlea eax, [ebp+%d]\n", num);
+	fprintf(fpasm, "\tpush dword eax\n");
 	//fprintf(fpasm, "\tpush dword [eax]\n");
 }
 
@@ -406,8 +408,20 @@ void leer(FILE * fpasm, char * nombre, int tipo)
 	fprintf(fpasm, "\tadd esp, 4\n");
 }
 
-void leer_local_o_parametro(FILE* fpasm, int tipo){
-	//README debe tener en el tope de la pila la direccion a leer
+void leer_local(FILE* fpasm, int tipo, int pos_variable){
+	//README debe tener en el tope de la pila la direccion a leer : ebp - %d
+	fprintf(fpasm, "\tlea eax, [ebp-%d]\n", 4*pos_variable);
+	fprintf(fpasm, "\tpush dword eax\n");
+	if(tipo == ENTERO)
+		fprintf(fpasm,"\tcall scan_int\n");
+	else
+		fprintf(fpasm,"\tcall scan_boolean\n");
+	fprintf(fpasm,"\tadd esp, 4\n");
+}
+
+void leer_parametro(FILE* fpasm, int tipo, int pos_param, int num_param){
+	fprintf(fpasm, "\tlea eax, [ebp+%d]\n", 4+4*(num_param-pos_param));
+	fprintf(fpasm, "\tpush dword eax\n");
 	if(tipo == ENTERO)
 		fprintf(fpasm,"\tcall scan_int\n");
 	else
