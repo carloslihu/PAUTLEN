@@ -406,12 +406,14 @@ void leer(FILE * fpasm, char * nombre, int tipo)
 	fprintf(fpasm, "\tadd esp, 4\n");
 }
 
-void leer_local()
-
-void leer_parametro()
-
-
-
+void leer_local_o_parametro(FILE* fpasm, int tipo){
+	//README debe tener en el tope de la pila la direccion a leer
+	if(tipo == ENTERO)
+		fprintf(fpasm,"\tcall scan_int\n");
+	else
+		fprintf(fpasm,"\tcall scan_boolean\n");
+	fprintf(fpasm,"\tadd esp, 4\n");
+}
 
 /**
  * @brief: escribe el codigo nasm para realizar una llamada a la funcion de alfalib.o que escribe en stdout

@@ -1,11 +1,16 @@
 main {
 	int z;
 	function int f(int x){
+		int z;
 		x = 3;
 		printf x;
 		scanf x;
+		printf x
+		scanf z;
+		printf z;
 		return x;
 	}
 	scanf z;
 	printf f(z);
+	printf z;
 }

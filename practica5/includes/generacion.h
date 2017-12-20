@@ -176,6 +176,8 @@ void no(FILE * fpasm, int es_referencia, int cuantos_no);//probar
  */
 void leer(FILE * fpasm, char * nombre, int tipo);
 
+void leer_local_o_parametro(FILE* fpasm, int tipo);
+
 /**
  * @brief: escribe el codigo nasm para realizar una llamada a la funcion de alfalib.o que escribe en stdout
  * @param: fpams: el archivo donde se va a escribir

@@ -591,7 +591,12 @@ lectura: TOK_SCANF TOK_IDENTIFICADOR {
 		//TODO que imprimir
 		return yyerror("Scanf sobre funcion");
 	}
-	leer(output, $2.lexema, $2.tipo);
+	if(getAmbito()==LOCAL && (aux->pos_local != -1 || aux->pos_param != -1)){//esta comprobacion sirve para ver si es parametro o var local. esos != -1 son porque al insertar una
+		//var global, metemos -1 en los campos que corresponderian a variables locales
+		leer_local_o_parametro(output, $2.tipo);
+	} else {
+		leer(output, $2.lexema, $2.tipo);
+	}
 	fprintf(output, ";R54:\t<lectura> ::= scanf <identificador>\n");
 	}
 
@@ -947,23 +952,20 @@ constante_entera: TOK_CONSTANTE_ENTERA {
 */
 //README solo deberia llegarse a esta regla de identificador desde una declaracion, no desde una expresion.
 identificador: TOK_IDENTIFICADOR {
+		INFO_SIMBOLO * info;
 		AMBITO amb = getAmbito();
+		info = buscar($1.lexema);
 		fprintf(output, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");
-		if (buscar($1.lexema)){
-			return yyerror("Declaracion duplicada.");
-		}
-		else{
-			if(amb == GLOBAL){
-				if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, -1, -1, -1, -1) == ERR)
-					return yyerror("acho que no inserta!\n");
-			} else {
-				//tratamos de insertar una variable local
-				if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, num_variables_local_actual, pos_variable_local_actual, -1, -1) == ERR)
-					return yyerror("acho que no inserta!\n");
-				//actualizamos las variables que llevan la cuenta de las posiciones y numeros de las variables locales
-				pos_variable_local_actual++;
-				num_variables_local_actual++;
-			}
+		if(amb == GLOBAL){
+			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, -1, -1, -1, -1) == ERR)
+				return yyerror("acho que no inserta!\n");
+		} else {
+			//tratamos de insertar una variable local
+			if(insertar($1.lexema, VARIABLE, tipo_actual, clase_actual, tam_actual, num_variables_local_actual, pos_variable_local_actual, -1, -1) == ERR)
+				return yyerror("acho que no inserta!\n");
+			//actualizamos las variables que llevan la cuenta de las posiciones y numeros de las variables locales
+			pos_variable_local_actual++;
+			num_variables_local_actual++;
 		}
 	}
 
