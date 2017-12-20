@@ -1,0 +1,18 @@
+README:
+
+	/prg: aqui tenemos ficheros .alf de prueba junto a sus ejecutables y a sus .asm (que se generan)
+		*.alf
+		ejectables
+		*.asm
+	/obj: los ficheros.o se generan aqui
+		*.o
+		/prg: los .o de los .alf de pruebas se generan aqui
+			*.o
+	/src: aqui guardamos los ficheros de codigo:
+		*.c
+		*.y
+		*.l
+	/includes: aqui guardamos los ficheros de cabecera:
+		*.h
+	Makefile
+	README
