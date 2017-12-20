@@ -20,14 +20,14 @@
 /* Información de un símbolo */
 typedef struct {
     char *lexema;           /* identificador */
-    CATEGORIA categoria;    /* categoría */
-    TIPO tipo;              /* tipo */
-    CLASE clase;            /* clase */
-    int tam;                /*numero de elementos de un vector*/
-    int n_locales;          /*numero de variables locales*/
-    int pos_local;          /*posicion de variable local*/
-    int n_param;            /*numero de parametros*/
-    int pos_param;          /*posicion del parametro*/
+    CATEGORIA categoria;    /* categoría { VARIABLE, PARAMETRO, FUNCION } */
+    TIPO tipo;              /* tipo { ENTERO, BOOLEANO } */
+    CLASE clase;            /* clase { ESCALAR, VECTOR } */
+    int tam;                /* tamaño de un vector */
+    int n_locales;          /* numero de variables locales */
+    int pos_local;          /* posicion de variable local */
+    int n_param;            /* numero de parametros */
+    int pos_param;          /* posicion del parametro */
     /*int adicional1;     valor si escalar, longitud si vector, número de parámetros si función */
     /*int adicional2;     posición en llamada a función si parámetro, posición de declaración si variable local de función, número de variables locales si función */
 } INFO_SIMBOLO;

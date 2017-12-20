@@ -199,7 +199,7 @@ clase: clase_escalar {
 	}
 	| clase_vector {
 		if(getAmbito() == LOCAL){
-			return yyerror("No estan permitidaslas variables locales de tipo no escalar.");
+			return yyerror("No estan permitidas las variables locales de tipo no escalar.");
 		}
 		clase_actual = VECTOR;
 		fprintf(output, ";R7:\t<clase> ::= <clase_vector>\n");
@@ -459,8 +459,8 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
 			INFO_SIMBOLO* info = buscar($1.lexema);
 			if(info == NULL){
 				return yyerror("Tabla de simbolos corrupta.");
-			} else if(info->categoria == FUNCION){//comprobamos que la parte izda de la asignacion no es una funcion
-				return yyerror("Asignacion incompatible a funcion");
+			} else if(info->categoria == FUNCION || info->categoria == PARAMETRO){//comprobamos que la parte izda de la asignacion no es una funcion
+				return yyerror("Asignacion incompatible a funcion o parametro");
 			} else if(info->clase == ESCALAR){//comprobacion redundante de la clase
 				return yyerror("Asignacion incompatible a escalar");
 			} else if(info->tipo != $3.tipo){//comprobamos igualdad de tipos entre las dos partes
@@ -485,7 +485,7 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
 			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 			return yyerror(str);
 		} else if(getAmbito() == LOCAL){
-			return yyerror("No estan permitidaslas variables locales de tipo no escalar.");
+			return yyerror("No estan permitidas las variables locales de tipo no escalar.");
 		} else if(info->clase == ESCALAR){
 			return yyerror("Intento de indexacion de una variable que no es de tipo vector.");
 		} else {
