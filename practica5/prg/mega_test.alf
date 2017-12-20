@@ -1,8 +1,16 @@
 main{
 	array int [5] vector1, vector2, vector3;
-	int i, x, y;
+	int i, x, y, j;
 
 
+	function int printParams(int i; int j; int k; int l; int m){
+		printf i;
+		printf j;
+		printf k;
+		printf l;
+		printf m;
+		return 1;
+	}
 
 	function int exp(int numero; int exponente){
 		if((exponente < 0)){
@@ -71,6 +79,8 @@ main{
 		aux = x;
 		x = y;
 		y = aux;
+		printf 9999999;
+		printf vector1[0];
 		return x*y*aux;
 	}
 
@@ -130,6 +140,11 @@ main{
 
 	i=0;
 	while((i<4)){
+		j=0;
+		while((j<5)){
+			vector1[i] = i*j;
+			j = j+1;
+		}
 		printf 11111;
 		printf vector1[i];
 		printf exp(2,vector1[i]);	
@@ -142,5 +157,10 @@ main{
 	printf is_prime(113);
 
 	printf virtual_swap(1, 2);
+	//printf m;
+	//printf iter;
+	printf printParams(1,2,i,vector1[0],i*vector1[0]);
+	vector1[0] = printParams(1,2,i,vector1[0],i*vector1[0]);
+	printf vector1[0];
 
 }

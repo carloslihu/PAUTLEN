@@ -479,7 +479,7 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
 		if(info == NULL){
 			sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
 			return yyerror(str);
-		} else if(getAmbito() == LOCAL){
+		} else if(getAmbito() == LOCAL  && !(info->pos_local == -1 && info->pos_param == -1)){//si el ambito es local y no es una variable global dentro de un ambito local
 			return yyerror("No estan permitidas las variables locales de tipo no escalar.");
 		} else if(info->clase == ESCALAR){
 			return yyerror("Intento de indexacion de una variable que no es de tipo vector.");
@@ -697,7 +697,7 @@ exp: exp TOK_MAS exp  {
 		$$.tipo = info->tipo;
 		$$.es_direccion = TRUE;
 
-		if(getAmbito()== GLOBAL) {//si el ambito es global
+		if(getAmbito()== GLOBAL || (info->pos_local == -1 && info->pos_param == -1)) {//si el ambito es global o es una variable global dentro de un ambito local
 			escribir_operando(output, $1.lexema, TRUE);
 			if(en_exp_list ){//si estamos en una llamada a funcion
 				$$.es_direccion = FALSE;
