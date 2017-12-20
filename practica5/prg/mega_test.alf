@@ -63,6 +63,16 @@ main{
 		return is_prime_rec(num, 1);
 	}
 
+	function int virtual_swap(int x; int y){
+		int aux;
+		aux = x;
+		x = y;
+		y = aux;
+		aux = x;
+		x = y;
+		y = aux;
+		return x*y*aux;
+	}
 
 	i=0;
 	while((i<5)){
@@ -131,5 +141,6 @@ main{
 	printf is_prime(100);
 	printf is_prime(113);
 
+	printf virtual_swap(1, 2);
 
 }
