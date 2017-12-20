@@ -1,18 +1,20 @@
 main{
 	array int [5] vector1, vector2, vector3;
-	int i;
+	int i, x, y;
+
+
 
 	function int exp(int numero; int exponente){
-		if((numero < 0)){
+		if((exponente < 0)){
 			return 0;
 		}
-		if((numero == 0)){
+		if((exponente == 0)){
 			return 1;
 		}
-		if((numero == 1)){
+		if((exponente == 1)){
 			return numero;
 		} else {
-			return numero*exp(numero-1, exponente);
+			return numero*exp(numero, exponente-1);
 		}
 	}
 
@@ -21,8 +23,46 @@ main{
 	}
 
 	function boolean assert_not_equal(int numero1; int numero2){
-		return !((numero1 < numero2) && (numero1 > numero2));
+		return !((numero1 <= numero2) && (numero1 >= numero2));
 	}
+
+	function boolean is_multiple_of_rec(int num; int multiple; int iter){
+		int m;
+		m = multiple;
+		if((iter >= num)){
+			return false;
+		} else {
+			if((iter*m == num)){
+				return true;
+			} else {
+				return is_multiple_of_rec(num, m, iter+1);
+			}
+		}
+	}
+
+	function boolean is_multiple_of(int num; int multiple){
+		return is_multiple_of_rec(num, multiple, 1);
+	}
+
+	function boolean is_prime_rec(int num; int iter){
+		if((num <= 1)){
+			return false;
+		}
+		if((iter*iter >= num)){
+			return true;
+		} else {
+			if((is_multiple_of(num, iter))){
+				return false;
+			} else {
+				return is_prime_rec(num, iter +1);
+			}
+		}
+	}
+
+	function boolean is_prime(int num){
+		return is_prime_rec(num, 1);
+	}
+
 
 	i=0;
 	while((i<5)){
@@ -63,5 +103,33 @@ main{
 		printf assert_not_equal(vector1[i], vector3[i]);
 		i = i+1;
 	}
+
+	printf 99999;
+
+	printf exp(2,0);
+	printf exp(2,1);
+	printf exp(2,2);
+	printf exp(2,3);
+	printf exp(2,4);
+	printf exp(2,5);
+	printf exp(2,6);
+	printf exp(2,7);
+	printf exp(2,8);
+	printf exp(2,9);
+	printf exp(2,10);
+
+	i=0;
+	while((i<4)){
+		printf 11111;
+		printf vector1[i];
+		printf exp(2,vector1[i]);	
+		i = i+1;
+	}
+
+	printf 33333;
+
+	printf is_prime(100);
+	printf is_prime(113);
+
 
 }
