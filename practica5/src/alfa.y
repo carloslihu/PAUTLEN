@@ -30,7 +30,6 @@
 	char str[200];//variable para impresion de errores
 
 	int yyerror(char* s) {
-		//TODO liberar las tablas de simbolos en caso de error
 		
 		if (yylval.atributos.tipo != -1){
 			if(strcmp(s, "syntax error"))
@@ -147,7 +146,6 @@
 	REGLA 1
 */
 programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones escritura1 funciones escritura2 sentencias TOK_LLAVEDERECHA {
-	//TODO liberar las tablas de simbolos en caso de compilacion correcta
 		escribir_fin(output);
 		fprintf(output, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");
 		limpiarTablas();
