@@ -364,15 +364,10 @@ parametro_funcion: tipo idpf {fprintf(output, ";R:27\t<parametro_funcion> ::= <t
 	regla para declaracion de parametros de funcion
 */
 idpf: TOK_IDENTIFICADOR {
-	INFO_SIMBOLO * info;
-	info = buscar($1.lexema);
-	if (info != NULL){
-		return yyerror("Declaracion duplicada.");
-	}
 	//realmente en esta insercion, el num_parametros_actual no hace falta insertarlo (porque es info para la funcion)
 	//num_parametros_actual podria ser 1
 	if(insertar($1.lexema, PARAMETRO, tipo_actual, ESCALAR, 1, -1, -1, num_parametros_actual, pos_parametro_actual) == ERR)
-		return yyerror("Tabla de simbolos corrupta.");
+		return yyerror("Declaracion duplicada.");
 	num_parametros_actual++;
 	pos_parametro_actual++;
 }

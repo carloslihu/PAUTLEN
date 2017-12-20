@@ -19,7 +19,7 @@ all:
 	mv *.h $(IDIR)
 	$(MAKE) alfa
 
-alfa: $(OBJ) $(ODIR)/alfa.o
+alfa: $(OBJ) $(ODIR)/main.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 asm:
@@ -39,5 +39,7 @@ zip:
 
 clean:
 	-rm $(OBJ) $(IDIR)/y.tab.h 
-	-rm $(SDIR)/lex.yy.c $(SDIR)/y.tab.c $(ODIR)/$(prg).o $(ODIR)/alfa.o
+	-rm $(SDIR)/lex.yy.c $(SDIR)/y.tab.c $(ODIR)/$(prg).o $(ODIR)/main.o
+	-rm $(ODIR)/prg/*.o
+	-rm prg/*.asm
 	-rm y.output alfa $(prg) *.asm
