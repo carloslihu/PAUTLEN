@@ -22,7 +22,7 @@ void escribir_subseccion_data(FILE* fpasm)
 		MENSAJES GENERALES (TEXTOS)
 		VARIABLES AUXILIARES NECESARIAS EN EL COMPILADOR QUE DEBAN TENER UN VALOR CONCRETO */
 	/* Variables auxiliares para mensajes de errores en tiempo de ejecución */
-	fprintf(fpasm, "segment .data\n\tmsg_error_division db \"error: divison by zero\", 0\n\tmsg_error_range db \"error: index out of range\", 0\n");
+	fprintf(fpasm, "segment .data\n\tmsg_error_division db \"****Error de ejecucion: Division por cero.\", 0\n\tmsg_error_range db \"****Error de ejecucion: Indice fuera de rango.\", 0\n");
 }
 
 
@@ -288,6 +288,13 @@ void asignar_local(FILE* fpasm, int pos_variable, int es_referencia){
 	fprintf(fpasm, "\tmov dword [ebp - %d], eax\n", num);
 }
 
+void asignar_parametro(FILE*fpasm, int pos_param, int num_param, int es_referencia){
+	fprintf(fpasm, "\tpop eax\n");
+	if(es_referencia)
+		fprintf(fpasm, "\tmov eax, dword [eax]\n");
+	fprintf(fpasm, "\tmov dword [ebp + %d], eax\n", 4 + 4*(num_param-pos_param));
+}
+
 
 /**
  * @brief: escribe el codigo nasm para realizar la suma de los dos operandos que se deben encontrar en la cima de la pila
@@ -398,6 +405,10 @@ void leer(FILE * fpasm, char * nombre, int tipo)
 		fprintf(fpasm, "\tcall scan_boolean\n");
 	fprintf(fpasm, "\tadd esp, 4\n");
 }
+
+void leer_local()
+
+void leer_parametro()
 
 
 

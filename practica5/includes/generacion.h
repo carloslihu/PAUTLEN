@@ -144,6 +144,8 @@ void asignar_vector(FILE * fpasm, int es_referencia);
  */
 void asignar_local(FILE* fpasm, int pos_variable, int es_referencia);
 
+void asignar_parametro(FILE*fpasm, int pos_param, int num_param, int es_referencia);
+
 /**
  * @brief: escribe el codigo nasm para realizar la suma de los dos operandos que se deben encontrar en la cima de la pila
  * @param: fpams: el archivo donde se va a escribir

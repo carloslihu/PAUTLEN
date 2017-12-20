@@ -27,7 +27,7 @@
 	/*int cuantos_bloque = 0;*/
 	//TODO quiza crear una variable global que sea un flag para indicar si estamos en ambito global o local (?)
 
-	char str[100];//variable para impresion de errores
+	char str[200];//variable para impresion de errores
 
 	int yyerror(char* s) {
 		//TODO liberar las tablas de simbolos en caso de error
@@ -283,16 +283,19 @@ funciones: funcion funciones {fprintf(output, ";R:20\t<funciones> ::= <funcion> 
 funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
 		INFO_SIMBOLO *info;
 		setAmbito(GLOBAL);
+		//la tabla de simbolos estara en el ambito global
 		info = buscar($1.lexema);
 		if(info == NULL){
-			//TODO
-			return yyerror("FATAL ERROR: encontrar el identificador de una funcion!!");
+			return yyerror("Tabla de simbolos corrupta.");
 		}
 		info->n_param = num_parametros_actual;
 		info->n_locales = num_variables_local_actual;
 		if(num_retornos == 0){
-			fprintf(stderr, "\nWARNING: no hay retorno de funcion %s\n", $1.lexema);
-			escribir_fin_funcion(output);
+			//fprintf(stderr, "\nWARNING: no hay retorno de funcion %s\n", $1.lexema);
+			sprintf(str, "Funcion %s sin sentencia de retorno.", $1.lexema);
+			return yyerror(str);
+			//README preguntar si puede haber funciones sin retorno
+			//escribir_fin_funcion(output);
 		}
 		//info->n_param = num_parametros_actual;
 		num_retornos = 0;
@@ -300,14 +303,13 @@ funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
 }
 
 fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion {
+	//la tabla de simbolos esta en ambito LOCAL
 	INFO_SIMBOLO * info = buscar($1.lexema);
 	if(info == NULL){
-		//TODO
-		return yyerror("FATAL ERROR: encontrar el identificador de una funcion!!");
+		return yyerror("Tabla de simbolos corrupta.");
 	}
 	info->n_param = num_parametros_actual;
 	info->n_locales = num_variables_local_actual;
-	//TODO generar codigo comienzo funcion
 	escribir_principio_funcion(output, info->lexema);
 	declarar_locales(output, num_variables_local_actual);
 	printf("simbolo encontrado: %s\nn_param: %d\nn_local: %d\n", info->lexema, info->n_param, info->n_locales);
@@ -376,9 +378,8 @@ idpf: TOK_IDENTIFICADOR {
 	
 	//README la clase de un parametro puede ser vector? en principio voy a asumir que no
 	//README realmente en esta insercion, el num_parametros_actual no hace falta insertarlo (porque es info para la funcion)
-	//TODO
 	if(insertar($1.lexema, PARAMETRO, tipo_actual, ESCALAR, 1, -1, -1, num_parametros_actual, pos_parametro_actual) == ERR)
-		return yyerror("error al insertar en la tabla de simbolos");
+		return yyerror("Tabla de simbolos corrupta.");
 	num_parametros_actual++;
 	pos_parametro_actual++;
 }
@@ -469,7 +470,8 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
 			} else if(info->tipo != $3.tipo){
 				return yyerror("Asignacion incompatible");
 			} else if(info->categoria == PARAMETRO){
-				return yyerror("error semantico: asignacion de a un parametro prohibida");
+				//return yyerror("error semantico: asignacion de a un parametro prohibida");//README preguntar al profe si puedes hacer una asignacion a un parametro
+				asignar_parametro(output, info->pos_param, num_parametros_actual, $3.es_direccion);
 			} else if (getAmbito() == GLOBAL){
 				asignar(output, $1.lexema, $3.es_direccion);
 			} else {//estamos asignando una variable local
@@ -480,9 +482,7 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp {
 		| elemento_vector TOK_ASIGNACION exp {
 			INFO_SIMBOLO* info = buscar($1.lexema);
 			if(info == NULL){
-				//TODO SOBRA?? MIRAR ELEMENTO_VECTOR
-				/*sprintf(str,"Acceso a variable no declarada (%s)",$1.lexema);
-				return yyerror(str);*/
+				return yyerror("Tabla de simbolos corrupta.");
 			} else if(info->categoria == FUNCION){
 				return yyerror("Asignacion incompatible");
 			} else if(info->clase == ESCALAR){
@@ -514,6 +514,7 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
 			escribir_elemento_vector(output, $1.lexema, $3.es_direccion, info->tam-1);//el -1 es porque el array va desde 0 hasta tamanio-1. En la generacion de codigo no se gestiona esa logica
 			$$.es_direccion = TRUE;
 		}
+		strcpy($$.lexema, $1.lexema);
 		fprintf(output, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");
 		}
 
@@ -585,10 +586,10 @@ lectura: TOK_SCANF TOK_IDENTIFICADOR {
 		return yyerror(str);
 	} else if(aux->clase != ESCALAR){
 		//TODO que imprimir
-		return yyerror("error semantico: ");
-	} else if (aux->categoria != VARIABLE){
+		return yyerror("Scanf sobre vector");
+	} else if (aux->categoria == FUNCION){
 		//TODO que imprimir
-		return yyerror("error semantico: ");
+		return yyerror("Scanf sobre funcion");
 	}
 	leer(output, $2.lexema, $2.tipo);
 	fprintf(output, ";R54:\t<lectura> ::= scanf <identificador>\n");
@@ -611,8 +612,11 @@ escritura: TOK_PRINTF exp {
 /*
 	REGLA 61
 */
+	//TODO VAMOS POR AQUI
 retorno_funcion: TOK_RETURN exp {
 		fprintf(output, ";R61:\t<retorno_funcion> ::= return <exp>\n");
+		if(getAmbito() == GLOBAL)
+			return yyerror("Sentencia de retorno fuera del cuerpo de una funcion");
 		num_retornos = 1;
 		escribir_fin_funcion(output);
 	}
@@ -776,6 +780,9 @@ exp: exp TOK_MAS exp  {
 	;
 
 idf_llamada_fn: TOK_IDENTIFICADOR{
+	if(en_exp_list == TRUE){
+		return yyerror("No esta permitido el uso de llamadas a funciones como parametros de otras funciones");
+	}
 	//TODO mirar tabla de simbolos el nombre del id (que sera la funcion)
 	strcpy($$.lexema, $1.lexema);
 	en_exp_list = TRUE;

@@ -3,6 +3,7 @@ ODIR=obj
 SDIR=src
 CC=gcc
 CFLAGS= -g -Wall
+prg=prg2
 
 _FILES=tablaHash tablaSimbolos generacion y.tab
 
@@ -22,10 +23,10 @@ alfa: $(OBJ) $(ODIR)/main.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 asm:
-	./alfa prg1.alf prg1.asm
-	nasm -felf32 prg1.asm
-	mv prg1.o $(ODIR)/prg1.o
-	gcc -m32 -o prg1 $(ODIR)/prg1.o $(ODIR)/alfalib.o
+	./alfa $(prg).alf $(prg).asm
+	nasm -felf32 $(prg).asm
+	mv $(prg).o $(ODIR)/$(prg).o
+	gcc -m32 -o $(prg) $(ODIR)/$(prg).o $(ODIR)/alfalib.o
 
 $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -37,5 +38,5 @@ zip:
 
 clean:
 	-rm $(OBJ) $(IDIR)/y.tab.h 
-	-rm $(SDIR)/alfa.c $(SDIR)/lex.yy.c $(SDIR)/y.tab.c $(ODIR)/prg1.o $(ODIR)/main.o
-	-rm y.output alfa prg1 prg1.asm
+	-rm $(SDIR)/alfa.c $(SDIR)/lex.yy.c $(SDIR)/y.tab.c $(ODIR)/$(prg).o $(ODIR)/main.o
+	-rm y.output alfa $(prg) $(prg).asm

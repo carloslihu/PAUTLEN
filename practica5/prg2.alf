@@ -1,0 +1,11 @@
+main {
+	int z;
+	function int f(int x){
+		x = 3;
+		printf x;
+		scanf x;
+		return x;
+	}
+	scanf z;
+	printf f(z);
+}
