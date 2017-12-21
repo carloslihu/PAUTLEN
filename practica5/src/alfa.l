@@ -56,7 +56,7 @@ false {col+=yyleng;
 "<" {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_MENOR;}   
 > {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_MAYOR;}
 
-\n {fil++; col=1;}
+\r?\n {fil++; col=1;}
 
 [ \t] {col+=yyleng;}
 
