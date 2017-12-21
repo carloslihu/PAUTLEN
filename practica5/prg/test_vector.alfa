@@ -1,0 +1,17 @@
+main
+{
+
+int x;
+array int [3] k;
+
+x = 2;
+printf x;
+
+k[0] = 50;
+printf k[0];
+k[1] = 7;
+printf k[1];
+k[x] = 12;
+printf k[x];
+
+}
