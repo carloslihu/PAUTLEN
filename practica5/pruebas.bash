@@ -1,5 +1,6 @@
 #!/bin/bash
-F=ficheros_profe
+F=prg
+
 make
 
 make asm prg=$F/aritmeticas1
