@@ -22,6 +22,16 @@ make asm prg=$F/vectores4
 make asm prg=$F/while
 
 
+make asm prg=$F/ej_bucles
+make asm prg=$F/ej_especifico1
+make asm prg=$F/ej_especifico2
+make asm prg=$F/ej_especifico3
+make asm prg=$F/ej_funciones1
+make asm prg=$F/ej_funciones2
+make asm prg=$F/ej_ifs
+make asm prg=$F/ej_logicas
+
+
 
 
 #./$F/aritmeticas2 < $F/aritmeticas2_1.input > $F/miaritmeticas2_1.output
