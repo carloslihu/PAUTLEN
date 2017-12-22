@@ -33,7 +33,7 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 zip:
-	zip -r GomezJavier_LiCarlos_compilador.zip *
+	zip -r GomezJavier_LiCarlos_compilador.zip includes obj src Makefile README
 
 .PHONY: clean
 
