@@ -20,6 +20,7 @@ function {col+=yyleng;  fprintf(output, ";D:\t%s\n",yytext); return TOK_FUNCTION
 if {col+=yyleng;  fprintf(output, ";D:\t%s\n",yytext); return TOK_IF;}
 else {col+=yyleng;  fprintf(output, ";D:\t%s\n",yytext); return TOK_ELSE;}
 while {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_WHILE;}
+init {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_INIT;}
 scanf {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_SCANF;}
 printf {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_PRINTF;}
 return {col+=yyleng; fprintf(output, ";D:\t%s\n",yytext); return TOK_RETURN;}

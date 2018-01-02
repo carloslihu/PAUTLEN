@@ -3,7 +3,7 @@ ODIR=obj
 SDIR=src
 CC=gcc
 CFLAGS= -g -Wall
-prg=prg1
+prg=prueba
 
 _FILES=tablaHash tablaSimbolos generacion y.tab
 

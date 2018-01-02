@@ -1,0 +1,11 @@
+main
+{
+array int[4] v;
+int x;
+x = 4;
+init v {x;-20;-30;40*2};
+printf v[0];
+printf v[1];
+printf v[2];
+printf v[3];
+}

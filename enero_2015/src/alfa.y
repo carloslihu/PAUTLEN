@@ -22,6 +22,8 @@
 	int pos_variable_local_actual = 1;//variable global usada para heredar numero de variables locales de una funcion
 	int num_variables_local_actual = 0;//variable global usada para heredar la posicion de una variable local dentro de una funcion
 	int num_retornos = 0;//flag para detectar si una funcion le falta la sentencia de retorno
+	int tam_init = 0;
+	int tipo_vector_init;
 
 	char str[200];//variable para impresion de errores
 
@@ -54,6 +56,7 @@
 %token TOK_SCANF
 %token TOK_PRINTF
 %token TOK_RETURN
+%token TOK_INIT
 
 %token TOK_PUNTOYCOMA
 %token TOK_COMA
@@ -135,6 +138,8 @@
 %type <atributos> fn_declaration
 %type <atributos> fn_name
 %type <atributos> idf_llamada_fn
+%type <atributos> init_vector
+%type <atributos> exp_vector
 
 
 %%
@@ -408,6 +413,7 @@ sentencia_simple: asignacion {fprintf(output, ";R34:\t<sentencia_simple> ::= <as
 	| lectura {fprintf(output, ";R35:\t<sentencia_simple> ::= <lectura>\n");}
 	| escritura {fprintf(output, ";R36:\t<sentencia_simple> ::= <escritura>\n");}
 	| retorno_funcion {fprintf(output, ";R38:\t<sentencia_simple> ::= <retorno_funcion>\n");}
+	| inicia_vector {fprintf(output, ";R38:\t<sentencia_simple> ::= <inicia_vector>\n");}
 	;
 
 
@@ -950,5 +956,80 @@ identificador: TOK_IDENTIFICADOR {
 				return yyerror("Declaracion duplicada.\n");
 		}
 	}
+
+
+inicia_vector: init_vector TOK_LLAVEIZQUIERDA lista_inicia_vector TOK_LLAVEDERECHA {
+	//escribir_operando(FILE * fpasm, char * nombre, int es_var);
+	//escribir_elemento_vector(output, $2.lexema, int indice_es_direccion, int rango);
+	int i;
+	char indice[255];
+
+	for(i=$1.valor_entero-1; i>=0; i--){
+		sprintf(indice, "%d", i);
+		if(tam_init > 0){
+			tam_init--;
+			escribir_operando(output, indice, FALSE);
+			escribir_elemento_vector(output, $1.lexema, FALSE, $1.valor_entero);
+			escribir_operando(output, "0", FALSE);
+			asignar_vector(output, FALSE);
+			//TODO meter un 0
+		} else {
+			escribir_operando(output, indice, FALSE);
+			escribir_elemento_vector(output, $1.lexema, FALSE, $1.valor_entero);
+			fprintf(output,"\tpop eax\n");
+			fprintf(output,"\tpop edx\n");
+			fprintf(output,"\tpush eax\n");
+			fprintf(output,"\tpush edx\n");
+			asignar_vector(output, FALSE);
+			//TODO metes lo que haya en la pila
+		}
+	}
+
+//	tam_init = 0;
+}
+
+init_vector: TOK_INIT TOK_IDENTIFICADOR{
+	sprintf(str,"Aceso a variable no declarada (%s)",$2.lexema);
+	INFO_SIMBOLO* info = buscar($2.lexema);
+	if(!info){
+		return yyerror(str);
+	}
+	tam_init = info->tam;
+	printf("init_vector: tam_init = %d\n\n",tam_init);
+	$$.valor_entero = info->tam;
+	tipo_vector_init = info->tipo;
+	strcpy($$.lexema, $2.lexema);
+}
+
+lista_inicia_vector: exp_vector resto_lista_inicia_vector {
+	tam_init--;
+	printf("tam_init: %d\n\n",tam_init);
+	if(tam_init < 0){
+		return yyerror("lista de inicializacion de logitud incorrecta");
+	}
+	if($1.tipo != tipo_vector_init){
+		return yyerror("tipo incompatible");
+	}
+}
+
+resto_lista_inicia_vector: TOK_PUNTOYCOMA exp_vector resto_lista_inicia_vector {
+		tam_init--;
+		printf("tam_init: %d\n\n",tam_init);
+		if(tam_init < 0){
+			return yyerror("lista de inicializacion de logitud incorrecta");
+		}
+		if($2.tipo != tipo_vector_init){
+			return yyerror("tipo incompatible");
+		}
+	}
+	| 
+	;
+
+exp_vector: exp {
+	if($1.es_direccion){
+			escribir_contenido_del_top(output);
+		}
+	$$.tipo = $1.tipo;
+}
 
 %%
