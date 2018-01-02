@@ -1,0 +1,12 @@
+main
+{
+int x=8, y;
+boolean a=false, b=true;
+
+
+printf x;
+x = 2;
+printf x;
+printf a;
+printf b;
+}
