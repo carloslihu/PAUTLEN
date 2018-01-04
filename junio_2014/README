@@ -1,0 +1,12 @@
+README:
+
+	/obj: los ficheros.o se generan aqui
+		*.o
+	/src: aqui guardamos los ficheros de codigo:
+		*.c
+		*.y
+		*.l
+	/includes: aqui guardamos los ficheros de cabecera:
+		*.h
+	Makefile
+	README

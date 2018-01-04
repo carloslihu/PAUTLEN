@@ -1,0 +1,30 @@
+main{
+	array boolean [3] x;
+	array int [3] z;
+	int a1, a2;
+	boolean b1, b2;
+	int y;
+
+	//function int test(int a){
+	//	int x;
+	//	x=3;
+	//	return x;
+	//}
+
+
+
+	y = test(-1);
+	printf -y;
+	//	y = x;
+	z[0] = x[0];
+
+	//b1 = (b1 > b2);
+	//b1 = a1 && a2;
+	//x = b1+b2;
+	//y=test(1);
+	//y = true;
+	//b[0] = true;
+	//return 0;
+	//x[b] = 5;
+	printf y;
+}

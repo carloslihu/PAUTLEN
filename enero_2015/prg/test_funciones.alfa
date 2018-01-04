@@ -1,0 +1,39 @@
+main
+{
+
+int x,y;
+
+function int double ( int arg ){
+
+  int var;
+
+  var = arg*2;
+  if((var<100))
+  {
+    var = double(var);
+  }
+  return var;
+}
+
+function int pow ( int base; int potencia){
+
+  int aux;
+  aux = 1;
+
+  potencia = double(potencia);
+  while ((base > 0)){
+  aux = aux * potencia  ;
+  base = base - 1;
+  }
+  return aux;
+
+}
+
+scanf x;
+scanf y;
+x = pow(x, y);
+printf x;
+y = double(y);
+printf y;
+
+}
