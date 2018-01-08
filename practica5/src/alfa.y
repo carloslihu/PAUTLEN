@@ -279,7 +279,7 @@ funciones: funcion funciones {fprintf(output, ";R:20\t<funciones> ::= <funcion> 
 /*
 	REGLA 22
 */
-funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
+funcion: fn_declaration sentencias TOK_LLAVEDERECHA {
 		INFO_SIMBOLO *info;
 		setAmbito(GLOBAL);//la tabla de simbolos estara en el ambito global
 		info = buscar($1.lexema);
@@ -296,7 +296,7 @@ funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
 		fprintf(output, ";R22:\t<funcion> ::= funcion <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion sentencias }\n");
 }
 
-fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion {
+fn_declaration: fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion {
 	//la tabla de simbolos esta en ambito LOCAL
 	INFO_SIMBOLO * info = buscar($1.lexema);
 	if(info == NULL){
@@ -309,7 +309,7 @@ fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTES
 	strcpy($$.lexema, $1.lexema);
 }
 
-fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR {
+fn_name: TOK_FUNCTION tipo TOK_IDENTIFICADOR {
 	INFO_SIMBOLO * info;
 	info = buscar($3.lexema);
 	if(info != NULL){
@@ -501,7 +501,7 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
 /*
 	REGLAS 50 51
 */
-condicional : if_exp_sentencias TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {
+condicional: if_exp_sentencias TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {
 			escribir_end_else(output, $1.etiqueta);
 			fprintf(output, ";\t<condicional> ::= <if_exp_sentencias> else { <sentencias> } ");
 		}
